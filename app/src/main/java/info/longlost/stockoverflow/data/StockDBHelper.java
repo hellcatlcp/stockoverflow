@@ -1,10 +1,10 @@
-package info.longlost.stockoverflow;
+package info.longlost.stockoverflow.data;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import info.longlost.stockoverflow.StockContract.StockEntry;
+import info.longlost.stockoverflow.data.StockContract.StockEntry;
 
 /**
  * Created by helenparsons on 8/2/15.

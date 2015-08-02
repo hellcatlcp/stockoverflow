@@ -1,4 +1,4 @@
-package info.longlost.stockoverflow;
+package info.longlost.stockoverflow.data;
 
 import android.content.ContentResolver;
 import android.net.Uri;
