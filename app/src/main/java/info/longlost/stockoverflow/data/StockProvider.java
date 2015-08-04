@@ -17,6 +17,7 @@ public class StockProvider extends ContentProvider {
     private StockDBHelper mOpenHelper;
 
     static final int STOCK = 100;
+    static final int PORTFOLIO = 101;
 
     @Override
     public boolean onCreate() {
@@ -44,6 +45,20 @@ public class StockProvider extends ContentProvider {
                 );
                 break;
             }
+
+            // "portfolio"
+            case PORTFOLIO: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        StockContract.PortfolioEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -59,6 +74,8 @@ public class StockProvider extends ContentProvider {
         switch (match) {
             case STOCK:
                 return StockContract.StockEntry.CONTENT_TYPE;
+            case PORTFOLIO:
+                return StockContract.StockEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -70,6 +87,7 @@ public class StockProvider extends ContentProvider {
 
         // For each type of URI you want to add, create a corresponding code.
         matcher.addURI(authority, StockContract.STOCKS_LOCATION, STOCK);
+        matcher.addURI(authority, StockContract.PORTFOLIOS_LOCATION, PORTFOLIO);
 
         return matcher;
     }
@@ -86,6 +104,15 @@ public class StockProvider extends ContentProvider {
                 if ( _id > 0 )
                     returnUri = StockContract.StockEntry.buildStockUri(values.getAsString(
                             StockContract.StockEntry.COLUMN_TICKER));
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case PORTFOLIO: {
+                long _id = db.insert(StockContract.PortfolioEntry.TABLE_NAME, null, values);
+                if ( _id > 0 )
+                    returnUri = StockContract.PortfolioEntry.buildPortfolioUri(values. getAsString(
+                        StockContract. PortfolioEntry. COLUMN_PORTFOLIO_NAME));
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
