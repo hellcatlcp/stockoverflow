@@ -27,7 +27,7 @@ public class StockDBHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String SQL_CREATE_STOCKS_TABLE = "CREATE TABLE " + PortfolioEntry.TABLE_NAME + " (" +
+        final String SQL_CREATE_STOCKS_TABLE = "CREATE TABLE " + StockEntry.TABLE_NAME + " (" +
                 StockEntry._ID + " INTEGER PRIMARY KEY," +
                 StockEntry.COLUMN_TICKER + " TEXT UNIQUE NOT NULL);";
 
