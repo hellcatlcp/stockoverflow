@@ -19,8 +19,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
+import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -51,7 +58,7 @@ public class NavigationDrawerFragment extends Fragment {
     private ActionBarDrawerToggle mDrawerToggle;
 
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerListView;
+    private ExpandableListView mDrawerListView;
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition = 0;
@@ -89,7 +96,7 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mDrawerListView = (ListView) inflater.inflate(
+        mDrawerListView = (ExpandableListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -97,13 +104,37 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
+
+        List<Map<String, String>> portfolioData = new ArrayList<Map<String, String>>() {{
+            add(new HashMap<String, String>() {{
+                put("PORTFOLIO_NAME", "My Portfolio");
+            }});
+        }};
+
+        List<List<Map<String, String>>> stocksData = new ArrayList<List<Map<String, String>>>() {{
+            add(new ArrayList<Map<String, String>>() {{
+                add(new HashMap<String, String>() {{
+                    put("TICKER", "GOOG");
+                }});
+                add(new HashMap<String, String>() {{
+                    put("TICKER", "GOOGL");
+                }});
+                add(new HashMap<String, String>() {{
+                    put("TICKER", "APPL");
+                }});
+            }});
+        }};
+
+        mDrawerListView.setAdapter(new SimpleExpandableListAdapter(
+                this.getActivity(),
+                portfolioData,
                 android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_myportfolio)
-                }));
+                new String[] { "PORTFOLIO_NAME" },
+                new int[] { android.R.id.text1 },
+                stocksData,
+                android.R.layout.simple_list_item_activated_1,
+                new String[] { "TICKER" },
+                new int[] { android.R.id.text1 }));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
