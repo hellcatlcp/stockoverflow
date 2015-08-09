@@ -7,6 +7,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
+import info.longlost.stockoverflow.util.SelectionBuilder;
+
+import static info.longlost.stockoverflow.data.StockContract.StockEntry;
+import static info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
+import static info.longlost.stockoverflow.data.StockContract.STOCKS_LOCATION;
+import static info.longlost.stockoverflow.data.StockContract.PORTFOLIOS_LOCATION;
+
 /**
  * Created by ldenison on 02/08/2015.
  */
@@ -16,8 +23,12 @@ public class StockProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private StockDBHelper mOpenHelper;
 
-    static final int STOCK = 100;
-    static final int PORTFOLIO = 101;
+    static final int STOCK_ID = 100;
+    static final int STOCK = 101;
+
+    static final int PORTFOLIO_ID = 200;
+    static final int PORTFOLIO = 201;
+    static final int PORTFOLIO_STOCKS = 202;
 
     @Override
     public boolean onCreate() {
@@ -25,45 +36,19 @@ public class StockProvider extends ContentProvider {
         return true;
     }
 
-    @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
-                        String sortOrder) {
-        // Here's the switch statement that, given a URI, will determine what kind of request it is,
-        // and query the database accordingly.
-        Cursor retCursor;
-        switch (sUriMatcher.match(uri)) {
-            // "stock"
-            case STOCK: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        StockContract.StockEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
-                break;
-            }
+    static UriMatcher buildUriMatcher() {
+        final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
+        final String authority = StockContract.CONTENT_AUTHORITY;
 
-            // "portfolio"
-            case PORTFOLIO: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        StockContract.PortfolioEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
-                break;
-            }
-            default:
-                throw new UnsupportedOperationException("Unknown uri: " + uri);
-        }
-        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
-        return retCursor;
+        // content://info.longlost.stockoverflow/stock/12355678
+        matcher.addURI(authority, STOCKS_LOCATION + "/*", STOCK_ID);
+        matcher.addURI(authority, STOCKS_LOCATION, STOCK);
+
+        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*", PORTFOLIO_ID);
+        matcher.addURI(authority, PORTFOLIOS_LOCATION, PORTFOLIO);
+        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION, PORTFOLIO_STOCKS);
+
+        return matcher;
     }
 
     @Override
@@ -72,24 +57,69 @@ public class StockProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
+            case STOCK_ID:
+                return StockEntry.CONTENT_ITEM_TYPE;
             case STOCK:
-                return StockContract.StockEntry.CONTENT_TYPE;
+                return StockEntry.CONTENT_TYPE;
+            case PORTFOLIO_ID:
+                return PortfolioEntry.CONTENT_ITEM_TYPE;
             case PORTFOLIO:
-                return StockContract.StockEntry.CONTENT_TYPE;
+                return PortfolioEntry.CONTENT_TYPE;
+            case PORTFOLIO_STOCKS:
+                return StockEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
     }
 
-    static UriMatcher buildUriMatcher() {
-        final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        final String authority = StockContract.CONTENT_AUTHORITY;
+    @Override
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+                        String sortOrder) {
+        Cursor retCursor;
+        String tableName;
+        SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
 
-        // For each type of URI you want to add, create a corresponding code.
-        matcher.addURI(authority, StockContract.STOCKS_LOCATION, STOCK);
-        matcher.addURI(authority, StockContract.PORTFOLIOS_LOCATION, PORTFOLIO);
+        switch (sUriMatcher.match(uri)) {
+            // "/stock/*"
+            case STOCK_ID: {
+                tableName = StockEntry.TABLE_NAME;
+                builder.add(StockEntry._ID + "=?",
+                        new String[] { StockEntry.getStockId(uri) });
+                break;
+            }
+            // "/stock"
+            case STOCK: {
+                tableName = StockEntry.TABLE_NAME;
+                break;
+            }
+            // "/portfolio/*"
+            case PORTFOLIO_ID: {
+                tableName = PortfolioEntry.TABLE_NAME;
+                builder.add(PortfolioEntry._ID + "=?",
+                        new String[] { PortfolioEntry.getPortfolioId(uri) });
+                break;
+            }
+            // "/portfolio"
+            case PORTFOLIO: {
+                tableName = PortfolioEntry.TABLE_NAME;
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
 
-        return matcher;
+        retCursor = mOpenHelper.getReadableDatabase().query(
+                tableName,
+                projection,
+                builder.build(),
+                builder.getSelectionArgs(),
+                null,
+                null,
+                sortOrder
+        );
+
+        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return retCursor;
     }
 
     @Override
@@ -100,19 +130,18 @@ public class StockProvider extends ContentProvider {
 
         switch (match) {
             case STOCK: {
-                long _id = db.insert(StockContract.StockEntry.TABLE_NAME, null, values);
+                long _id = db.insert(StockEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
-                    returnUri = StockContract.StockEntry.buildStockUri(values.getAsString(
-                            StockContract.StockEntry.COLUMN_TICKER));
+                    returnUri = StockEntry.buildStockUri(values.getAsLong(StockEntry._ID));
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
             case PORTFOLIO: {
-                long _id = db.insert(StockContract.PortfolioEntry.TABLE_NAME, null, values);
+                long _id = db.insert(PortfolioEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
-                    returnUri = StockContract.PortfolioEntry.buildPortfolioUri(values.getAsLong(
-                        StockContract.PortfolioEntry._ID));
+                    returnUri = PortfolioEntry.buildPortfolioUri(values.getAsLong(
+                        PortfolioEntry._ID));
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
@@ -135,12 +164,10 @@ public class StockProvider extends ContentProvider {
 
         switch (match) {
             case STOCK:
-                rowsDeleted = db.delete(
-                        StockContract.StockEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = db.delete(StockEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             case PORTFOLIO:
-                rowsDeleted = db.delete(
-                        StockContract.PortfolioEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = db.delete(PortfolioEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -162,12 +189,10 @@ public class StockProvider extends ContentProvider {
 
         switch (match) {
             case STOCK:
-                rowsUpdated = db.update(StockContract.StockEntry.TABLE_NAME, values, selection,
-                        selectionArgs);
+                rowsUpdated = db.update(StockEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
             case PORTFOLIO:
-                rowsUpdated = db.update(StockContract.PortfolioEntry.TABLE_NAME, values, selection,
-                        selectionArgs);
+                rowsUpdated = db.update(PortfolioEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -190,7 +215,7 @@ public class StockProvider extends ContentProvider {
                 db.beginTransaction();
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insert(StockContract.StockEntry.TABLE_NAME, null, value);
+                        long _id = db.insert(StockEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
                         }
@@ -205,7 +230,7 @@ public class StockProvider extends ContentProvider {
                 db.beginTransaction();
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insert(StockContract.PortfolioEntry.TABLE_NAME, null, value);
+                        long _id = db.insert(PortfolioEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
                         }

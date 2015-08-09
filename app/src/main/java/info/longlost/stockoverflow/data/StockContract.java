@@ -13,7 +13,7 @@ public class StockContract {
     public static final String CONTENT_AUTHORITY = "info.longlost.stockoverflow";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String STOCKS_LOCATION =  "stock";
-    public static final String PORTFOLIOS_LOCATION =  "portfolios";
+    public static final String PORTFOLIOS_LOCATION =  "portfolio";
 
     //Create database table for a set of stocks
 
@@ -25,15 +25,14 @@ public class StockContract {
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
                 CONTENT_AUTHORITY + "/" + STOCKS_LOCATION;
         public static final String TABLE_NAME = "stocks";
-        public static final String COLUMN_PORTFOLIO_KEY = "portfolio_id";
         public static final String COLUMN_TICKER = "ticker";
 
 
-        public static Uri buildStockUri(String ticker) {
-            return CONTENT_URI.buildUpon().appendPath(ticker).build();
+        public static Uri buildStockUri(long stock_id) {
+            return ContentUris.withAppendedId(CONTENT_URI, stock_id);
         }
 
-        public static String getTickerFromUri(Uri uri) {
+        public static String getStockId(Uri uri) {
             return uri.getPathSegments().get(1);
         }
 
@@ -56,8 +55,19 @@ public class StockContract {
             return ContentUris.withAppendedId(CONTENT_URI, portfolio_id);
         }
 
+        public static String getPortfolioId(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
     }
 
+    public static final class PortfolioStockMap implements BaseColumns {
+
+        public static final String TABLE_NAME = "portfolio_map";
+        public static final String COLUMN_PORTFOLIO_ID = "portfolio_id";
+        public static final String COLUMN_STOCK_ID = "stock_id";
+        public static final String COLUMN_STOCK_AMOUNT = "stock_amount";
+
+    }
 
 }
 

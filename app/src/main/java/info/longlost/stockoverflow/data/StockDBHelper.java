@@ -36,7 +36,6 @@ public class StockDBHelper extends SQLiteOpenHelper{
 
         final String SQL_CREATE_STOCKS_TABLE = "CREATE TABLE " + StockEntry.TABLE_NAME + " (" +
                 StockEntry._ID + " INTEGER PRIMARY KEY," +
-                StockEntry.COLUMN_PORTFOLIO_KEY + " INTEGER NOT NULL," +
                 StockEntry.COLUMN_TICKER + " TEXT UNIQUE NOT NULL);";
 
         db.execSQL(SQL_CREATE_STOCKS_TABLE);
