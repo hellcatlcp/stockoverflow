@@ -111,8 +111,8 @@ public class StockProvider extends ContentProvider {
             case PORTFOLIO: {
                 long _id = db.insert(StockContract.PortfolioEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
-                    returnUri = StockContract.PortfolioEntry.buildPortfolioUri(values. getAsString(
-                        StockContract. PortfolioEntry. COLUMN_PORTFOLIO_NAME));
+                    returnUri = StockContract.PortfolioEntry.buildPortfolioUri(values.getAsLong(
+                        StockContract.PortfolioEntry._ID));
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
@@ -138,6 +138,10 @@ public class StockProvider extends ContentProvider {
                 rowsDeleted = db.delete(
                         StockContract.StockEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+            case PORTFOLIO:
+                rowsDeleted = db.delete(
+                        StockContract.PortfolioEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -161,6 +165,10 @@ public class StockProvider extends ContentProvider {
                 rowsUpdated = db.update(StockContract.StockEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
+            case PORTFOLIO:
+                rowsUpdated = db.update(StockContract.PortfolioEntry.TABLE_NAME, values, selection,
+                        selectionArgs);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -176,13 +184,28 @@ public class StockProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
+        int returnCount = 0;
         switch (match) {
             case STOCK:
                 db.beginTransaction();
-                int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
                         long _id = db.insert(StockContract.StockEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnCount;
+            case PORTFOLIO:
+                db.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(StockContract.PortfolioEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
                         }

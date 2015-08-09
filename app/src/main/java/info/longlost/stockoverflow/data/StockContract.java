@@ -1,6 +1,7 @@
 package info.longlost.stockoverflow.data;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -24,6 +25,7 @@ public class StockContract {
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
                 CONTENT_AUTHORITY + "/" + STOCKS_LOCATION;
         public static final String TABLE_NAME = "stocks";
+        public static final String COLUMN_PORTFOLIO_KEY = "portfolio_id";
         public static final String COLUMN_TICKER = "ticker";
 
 
@@ -50,12 +52,8 @@ public class StockContract {
         public static final String COLUMN_PORTFOLIO_NAME = "portfolio";
 
 
-        public static Uri buildPortfolioUri(String  portfolio ) {
-            return CONTENT_URI.buildUpon().appendPath(portfolio).build();
-        }
-
-        public static String getPortfolioFromUri(Uri uri) {
-            return uri.getPathSegments().get(1);
+        public static Uri buildPortfolioUri(long  portfolio_id) {
+            return ContentUris.withAppendedId(CONTENT_URI, portfolio_id);
         }
 
     }
