@@ -62,7 +62,15 @@ public class StockContract {
 
     public static final class PortfolioStockMap implements BaseColumns {
 
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
+                .appendPath(PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION).build();
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION;
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION;
+
         public static final String TABLE_NAME = "portfolio_map";
+        public static final String STOCKS_VIEW = "stocks_view";
         public static final String COLUMN_PORTFOLIO_ID = "portfolio_id";
         public static final String COLUMN_STOCK_ID = "stock_id";
         public static final String COLUMN_STOCK_AMOUNT = "stock_amount";

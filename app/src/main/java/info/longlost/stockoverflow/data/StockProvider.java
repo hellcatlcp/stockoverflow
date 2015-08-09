@@ -4,6 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
@@ -11,6 +12,7 @@ import info.longlost.stockoverflow.util.SelectionBuilder;
 
 import static info.longlost.stockoverflow.data.StockContract.StockEntry;
 import static info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
+import static info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
 import static info.longlost.stockoverflow.data.StockContract.STOCKS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PORTFOLIOS_LOCATION;
 
@@ -29,6 +31,7 @@ public class StockProvider extends ContentProvider {
     static final int PORTFOLIO_ID = 200;
     static final int PORTFOLIO = 201;
     static final int PORTFOLIO_STOCKS = 202;
+    static final int PORTFOLIO_STOCKS_ID = 203;
 
     @Override
     public boolean onCreate() {
@@ -40,13 +43,14 @@ public class StockProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = StockContract.CONTENT_AUTHORITY;
 
-        // content://info.longlost.stockoverflow/stock/12355678
         matcher.addURI(authority, STOCKS_LOCATION + "/*", STOCK_ID);
         matcher.addURI(authority, STOCKS_LOCATION, STOCK);
 
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*", PORTFOLIO_ID);
         matcher.addURI(authority, PORTFOLIOS_LOCATION, PORTFOLIO);
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION, PORTFOLIO_STOCKS);
+        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION + "/*",
+                PORTFOLIO_STOCKS_ID);
 
         return matcher;
     }
@@ -66,7 +70,9 @@ public class StockProvider extends ContentProvider {
             case PORTFOLIO:
                 return PortfolioEntry.CONTENT_TYPE;
             case PORTFOLIO_STOCKS:
-                return StockEntry.CONTENT_TYPE;
+                return PortfolioStockMap.CONTENT_TYPE;
+            case PORTFOLIO_STOCKS_ID:
+                return PortfolioStockMap.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -104,6 +110,13 @@ public class StockProvider extends ContentProvider {
                 tableName = PortfolioEntry.TABLE_NAME;
                 break;
             }
+            // "/portfolio/*/stock"
+            case PORTFOLIO_STOCKS: {
+                tableName = PortfolioStockMap.STOCKS_VIEW;
+                builder.add(PortfolioEntry._ID + "=?",
+                        new String[] { PortfolioEntry.getPortfolioId(uri) });
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -134,7 +147,7 @@ public class StockProvider extends ContentProvider {
                 if ( _id > 0 )
                     returnUri = StockEntry.buildStockUri(values.getAsLong(StockEntry._ID));
                 else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                    throw new SQLException("Failed to insert row into " + uri);
                 break;
             }
             case PORTFOLIO: {
@@ -143,7 +156,7 @@ public class StockProvider extends ContentProvider {
                     returnUri = PortfolioEntry.buildPortfolioUri(values.getAsLong(
                         PortfolioEntry._ID));
                 else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                    throw new SQLException("Failed to insert row into " + uri);
                 break;
             }
             default:
