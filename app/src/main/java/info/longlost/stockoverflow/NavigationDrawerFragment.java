@@ -1,5 +1,11 @@
 package info.longlost.stockoverflow;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.support.v7.app.ActionBar;
@@ -18,9 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
+import android.widget.SimpleCursorTreeAdapter;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
 
@@ -29,12 +34,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
+import info.longlost.stockoverflow.data.StockContract.StockEntry;
+
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
  * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
-public class NavigationDrawerFragment extends Fragment {
+public class NavigationDrawerFragment extends Fragment implements
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     /**
      * Remember the position of the selected item.
@@ -59,6 +68,7 @@ public class NavigationDrawerFragment extends Fragment {
 
     private DrawerLayout mDrawerLayout;
     private ExpandableListView mDrawerListView;
+    private DrawerCursorAdapter mDrawerListAdapter;
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition = 0;
@@ -105,36 +115,17 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
 
-        List<Map<String, String>> portfolioData = new ArrayList<Map<String, String>>() {{
-            add(new HashMap<String, String>() {{
-                put("PORTFOLIO_NAME", "My Portfolio");
-            }});
-        }};
-
-        List<List<Map<String, String>>> stocksData = new ArrayList<List<Map<String, String>>>() {{
-            add(new ArrayList<Map<String, String>>() {{
-                add(new HashMap<String, String>() {{
-                    put("TICKER", "GOOG");
-                }});
-                add(new HashMap<String, String>() {{
-                    put("TICKER", "GOOGL");
-                }});
-                add(new HashMap<String, String>() {{
-                    put("TICKER", "APPL");
-                }});
-            }});
-        }};
-
-        mDrawerListView.setAdapter(new SimpleExpandableListAdapter(
-                this.getActivity(),
-                portfolioData,
+        mDrawerListAdapter = new DrawerCursorAdapter(this.getActivity(), null,
+                android.R.layout.simple_list_item_1,
                 android.R.layout.simple_list_item_activated_1,
-                new String[] { "PORTFOLIO_NAME" },
-                new int[] { android.R.id.text1 },
-                stocksData,
-                android.R.layout.simple_list_item_activated_1,
-                new String[] { "TICKER" },
-                new int[] { android.R.id.text1 }));
+                new String[] {PortfolioEntry.COLUMN_PORTFOLIO_NAME},
+                new int[] {android.R.id.text1},
+                android.R.layout.simple_list_item_1,
+                android.R.layout.simple_list_item_1,
+                new String[] {StockEntry.COLUMN_TICKER},
+                new int[] {android.R.id.text1});
+
+        mDrawerListView.setAdapter(mDrawerListAdapter);
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -299,6 +290,45 @@ public class NavigationDrawerFragment extends Fragment {
 
     private ActionBar getActionBar() {
         return ((ActionBarActivity) getActivity()).getSupportActionBar();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity(),
+                PortfolioEntry.CONTENT_URI,
+                new String[] {
+                        PortfolioEntry._ID,
+                        PortfolioEntry.COLUMN_PORTFOLIO_NAME
+                },
+                null,
+                null,
+                "ASC");
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mDrawerListAdapter.setGroupCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mDrawerListAdapter.setGroupCursor(null);
+    }
+
+    private static class DrawerCursorAdapter extends SimpleCursorTreeAdapter {
+
+        public DrawerCursorAdapter(Context context, Cursor cursor, int collapsedGroupLayout,
+                                   int expandedGroupLayout, String[] groupFrom, int[] groupTo,
+                                   int childLayout, int lastChildLayout, String[] childFrom,
+                                   int[] childTo) {
+            super(context, cursor, collapsedGroupLayout, expandedGroupLayout, groupFrom, groupTo,
+                    childLayout, lastChildLayout, childFrom, childTo);
+        }
+
+        @Override
+        protected Cursor getChildrenCursor(Cursor groupCursor) {
+            return null;
+        }
     }
 
     /**
