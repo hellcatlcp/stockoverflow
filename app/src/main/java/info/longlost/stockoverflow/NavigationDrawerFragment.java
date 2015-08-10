@@ -56,6 +56,10 @@ public class NavigationDrawerFragment extends Fragment implements
      */
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
 
+    private static final int PORTFOLIO_LOADER = 100;
+
+    private static final int STOCK_LOADER = 1000;
+
     /**
      * A pointer to the current callbacks instance (the Activity).
      */
@@ -100,6 +104,7 @@ public class NavigationDrawerFragment extends Fragment implements
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Indicate that this fragment would like to influence the set of actions in the action bar.
+        getLoaderManager().initLoader(PORTFOLIO_LOADER, null, this);
         setHasOptionsMenu(true);
     }
 
@@ -294,20 +299,33 @@ public class NavigationDrawerFragment extends Fragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(),
-                PortfolioEntry.CONTENT_URI,
-                new String[] {
-                        PortfolioEntry._ID,
-                        PortfolioEntry.COLUMN_PORTFOLIO_NAME
-                },
-                null,
-                null,
-                "ASC");
+        switch (id) {
+            case PORTFOLIO_LOADER:
+                return new CursorLoader(getActivity(),
+                        PortfolioEntry.CONTENT_URI,
+                        new String[] {
+                                PortfolioEntry._ID,
+                                PortfolioEntry.COLUMN_PORTFOLIO_NAME
+                        },
+                        null,
+                        null,
+                        null);
+            default:
+                return null;
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        int idx = 0;
+        long portfolio_id;
         mDrawerListAdapter.setGroupCursor(data);
+
+        for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
+            portfolio_id = data.getLong(0);
+
+
+        }
     }
 
     @Override

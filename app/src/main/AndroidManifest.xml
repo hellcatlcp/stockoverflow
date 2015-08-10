@@ -27,12 +27,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
-    <provider
-        android:authorities="@string/content_authority"
-        android:name=".data.StockProvider"
-        android:exported="false"
-        android:syncable="true" />
+        <provider
+            android:authorities="@string/content_authority"
+            android:name=".data.StockProvider" />
+        <!--    android:exported="false"
+            android:syncable="true" / -->
+    </application>
 
 </manifest>
