@@ -342,27 +342,28 @@ public class NavigationDrawerFragment extends Fragment implements
                 mDrawerListAdapter.setGroupCursor(data);
 
                 if (mStocksCursor != null) {
-                    setStockCursors(mStocksCursor);
+                    setStockCursors(mPortfolioCursor, mStocksCursor);
                 }
                 break;
             case STOCK_LOADER:
                 mStocksCursor = data;
 
                 if (mPortfolioCursor != null) {
-                    setStockCursors(mStocksCursor);
+                    setStockCursors(mPortfolioCursor, mStocksCursor);
                 }
                 break;
         }
     }
 
-    private void setStockCursors(Cursor data) {
+    private void setStockCursors(Cursor portfolioCursor, Cursor stocksCursor) {
         int idx = 0;
         long portfolio_id;
+        int columnIdx = portfolioCursor.getColumnIndex(PortfolioEntry._ID);
 
-        for (mPortfolioCursor.moveToFirst(); !mPortfolioCursor.isAfterLast(); mPortfolioCursor.moveToNext()) {
-            portfolio_id = mPortfolioCursor.getLong(0);
+        for (portfolioCursor.moveToFirst(); !portfolioCursor.isAfterLast(); portfolioCursor.moveToNext()) {
+            portfolio_id = portfolioCursor.getLong(columnIdx);
 
-            mDrawerListAdapter.setChildrenCursor(idx, new FilterCursor(data,
+            mDrawerListAdapter.setChildrenCursor(idx, new FilterCursor(stocksCursor,
                     new SimpleEqualsFilter(PortfolioStockMap.COLUMN_PORTFOLIO_ID,
                             new Long(portfolio_id))));
             idx++;
@@ -374,11 +375,12 @@ public class NavigationDrawerFragment extends Fragment implements
         int idx = 0;
         long portfolio_id;
         Cursor groupCursor = mDrawerListAdapter.getCursor();
+        int columnIdx = groupCursor.getColumnIndex(PortfolioEntry._ID);
 
         switch (loader.getId()) {
             case PORTFOLIO_LOADER:
                 for (groupCursor.moveToFirst(); !groupCursor.isAfterLast(); groupCursor.moveToNext()) {
-                    portfolio_id = groupCursor.getLong(0);
+                    portfolio_id = groupCursor.getLong(columnIdx);
 
                     mDrawerListAdapter.setChildrenCursor(idx, null);
                     idx++;
@@ -396,7 +398,7 @@ public class NavigationDrawerFragment extends Fragment implements
         }
     }
 
-    private static class DrawerCursorAdapter extends SimpleCursorTreeAdapter {
+    private class DrawerCursorAdapter extends SimpleCursorTreeAdapter {
 
         public DrawerCursorAdapter(Context context, Cursor cursor, int collapsedGroupLayout,
                                    int expandedGroupLayout, String[] groupFrom, int[] groupTo,
@@ -408,7 +410,17 @@ public class NavigationDrawerFragment extends Fragment implements
 
         @Override
         protected Cursor getChildrenCursor(Cursor groupCursor) {
-            return null;
+            int columnIdx = groupCursor.getColumnIndex(PortfolioEntry._ID);
+
+            if (groupCursor != null && mStocksCursor != null) {
+                long portfolio_id = groupCursor.getLong(columnIdx);
+
+                return new FilterCursor(mStocksCursor,
+                        new SimpleEqualsFilter(PortfolioStockMap.COLUMN_PORTFOLIO_ID,
+                                new Long(portfolio_id)));
+            } else {
+                return null;
+            }
         }
     }
 
