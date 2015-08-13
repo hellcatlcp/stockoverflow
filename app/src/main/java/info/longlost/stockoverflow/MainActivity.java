@@ -41,23 +41,23 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
-    public void onNavigationDrawerItemSelected(int fragment, String id) {
+    public void onPortfolioSelected(long portfolioId) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        switch (fragment) {
-            case MY_PORFOLIO_FRAGMENT:
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, PortfolioFragment.newInstance())
-                        .commit();
-                break;
-            case STOCK_FRAGMENT:
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, StockFragment.newInstance(id))
-                        .commit();
-                break;
-        }
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, PortfolioFragment.newInstance(portfolioId))
+                .commit();
+    }
 
+    @Override
+    public void onStockSelected(long stockId) {
+        // update the main content by replacing fragments
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, StockFragment.newInstance(stockId))
+                .commit();
     }
 
     public void onSectionAttached(int fragment) {

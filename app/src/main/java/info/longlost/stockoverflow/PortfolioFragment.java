@@ -11,22 +11,32 @@ import android.view.ViewGroup;
  * Displays collated info about all stocks in this portfolio.
  */
 public class PortfolioFragment extends Fragment {
-    /**
-     * The fragment argument representing the section number for this
-     * fragment.
-     */
-    private static final String ARG_SECTION_NUMBER = "section_number";
+
+    private static final String ARG_PORTFOLIO_ID = "portfolio_id";
+
+    private long mPortfolioId;
 
     /**
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static PortfolioFragment newInstance() {
+    public static PortfolioFragment newInstance(long portfolioId) {
         PortfolioFragment fragment = new PortfolioFragment();
+        Bundle args = new Bundle();
+        args.putLong(ARG_PORTFOLIO_ID, portfolioId);
+        fragment.setArguments(args);
         return fragment;
     }
 
     public PortfolioFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mPortfolioId = getArguments().getLong(ARG_PORTFOLIO_ID);
+        }
     }
 
     @Override

@@ -19,9 +19,9 @@ import android.view.ViewGroup;
  */
 public class StockFragment extends Fragment {
 
-    private static final String ARG_STOCK_TICKER = "stock_ticker";
+    private static final String ARG_STOCK_ID = "stock_id";
 
-    private String mStockTicker;
+    private long mStockId;
 
     private OnFragmentInteractionListener mListener;
 
@@ -29,13 +29,13 @@ public class StockFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param stockTicker Stock ticker to display.
+     * @param stockId Stock ticker to display.
      * @return A new instance of fragment StockFragment.
      */
-    public static StockFragment newInstance(String stockTicker) {
+    public static StockFragment newInstance(long stockId) {
         StockFragment fragment = new StockFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_STOCK_TICKER, stockTicker);
+        args.putLong(ARG_STOCK_ID, stockId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,7 +48,7 @@ public class StockFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStockTicker = getArguments().getString(ARG_STOCK_TICKER);
+            mStockId = getArguments().getLong(ARG_STOCK_ID);
         }
     }
 
