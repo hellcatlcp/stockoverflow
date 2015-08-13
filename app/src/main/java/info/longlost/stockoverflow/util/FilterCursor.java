@@ -9,8 +9,6 @@ import android.util.SparseIntArray;
  */
 public class FilterCursor extends CursorWrapper {
 
-    private String[] mOrderingHint;
-
     private Filter mFilter;
 
     /**
@@ -24,7 +22,6 @@ public class FilterCursor extends CursorWrapper {
 
     public FilterCursor(Cursor cursor, Filter filter, String[] orderingHint) {
         super(cursor);
-        mOrderingHint = orderingHint;
         mFilter = filter;
         mFilter.buildIndex(cursor, orderingHint);
     }

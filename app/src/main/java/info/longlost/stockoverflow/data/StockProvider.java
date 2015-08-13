@@ -31,7 +31,8 @@ public class StockProvider extends ContentProvider {
     static final int PORTFOLIO_ID = 200;
     static final int PORTFOLIO = 201;
     static final int PORTFOLIO_STOCKS = 202;
-    static final int PORTFOLIO_STOCKS_ID = 203;
+    static final int PORTFOLIO_ID_STOCKS = 203;
+    static final int PORTFOLIO_STOCKS_ID = 204;
 
     @Override
     public boolean onCreate() {
@@ -48,7 +49,9 @@ public class StockProvider extends ContentProvider {
 
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*", PORTFOLIO_ID);
         matcher.addURI(authority, PORTFOLIOS_LOCATION, PORTFOLIO);
-        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION, PORTFOLIO_STOCKS);
+        matcher.addURI(authority, PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION, PORTFOLIO_STOCKS);
+        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION,
+                PORTFOLIO_ID_STOCKS);
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION + "/*",
                 PORTFOLIO_STOCKS_ID);
 
@@ -112,6 +115,10 @@ public class StockProvider extends ContentProvider {
             }
             // "/portfolio/*/stock"
             case PORTFOLIO_STOCKS: {
+                tableName = PortfolioStockMap.STOCKS_VIEW;
+                break;
+            }
+            case PORTFOLIO_ID_STOCKS: {
                 tableName = PortfolioStockMap.STOCKS_VIEW;
                 builder.add(PortfolioEntry._ID + "=?",
                         new String[] { PortfolioEntry.getPortfolioId(uri) });

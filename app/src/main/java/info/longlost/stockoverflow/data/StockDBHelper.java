@@ -70,6 +70,7 @@ public class StockDBHelper extends SQLiteOpenHelper{
         values.put(PortfolioStockMap.COLUMN_PORTFOLIO_ID, portfolio_id);
         values.put(PortfolioStockMap.COLUMN_STOCK_ID, stock_id);
         values.put(PortfolioStockMap.COLUMN_STOCK_AMOUNT, 10);
+        db.insert(PortfolioStockMap.TABLE_NAME, null, values);
 
         // Create dummy GOOGL data
         values.clear();
@@ -79,6 +80,7 @@ public class StockDBHelper extends SQLiteOpenHelper{
         values.put(PortfolioStockMap.COLUMN_PORTFOLIO_ID, portfolio_id);
         values.put(PortfolioStockMap.COLUMN_STOCK_ID, stock_id);
         values.put(PortfolioStockMap.COLUMN_STOCK_AMOUNT, 10);
+        db.insert(PortfolioStockMap.TABLE_NAME, null, values);
 
         // Create dummy APPL data
         values.clear();
@@ -88,6 +90,7 @@ public class StockDBHelper extends SQLiteOpenHelper{
         values.put(PortfolioStockMap.COLUMN_PORTFOLIO_ID, portfolio_id);
         values.put(PortfolioStockMap.COLUMN_STOCK_ID, stock_id);
         values.put(PortfolioStockMap.COLUMN_STOCK_AMOUNT, 10);
+        db.insert(PortfolioStockMap.TABLE_NAME, null, values);
 
 
     }

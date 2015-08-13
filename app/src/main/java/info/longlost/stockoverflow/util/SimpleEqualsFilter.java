@@ -1,6 +1,7 @@
 package info.longlost.stockoverflow.util;
 
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 
 /**
  * Created by ldenison on 12/08/2015.
@@ -17,7 +18,10 @@ public class SimpleEqualsFilter extends FilterCursor.Filter {
 
     @Override
     public void buildIndex(Cursor cursor, String[] orderingHint) {
+        cursor.moveToFirst();
+
         int columnIdx = cursor.getColumnIndex(mColumn);
+        String dump = DatabaseUtils.dumpCursorToString(cursor);
         int columnType = cursor.getType(columnIdx);
         int count = 0;
 
@@ -25,7 +29,7 @@ public class SimpleEqualsFilter extends FilterCursor.Filter {
             case Cursor.FIELD_TYPE_NULL:
                 return;
             case Cursor.FIELD_TYPE_INTEGER:
-                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
                     if (mValue.equals(cursor.getInt(columnIdx))) {
                         mReverseIdx.append(cursor.getPosition(), count);
                         count++;
@@ -33,7 +37,7 @@ public class SimpleEqualsFilter extends FilterCursor.Filter {
                 }
                 break;
             case Cursor.FIELD_TYPE_STRING:
-                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
                     if (mValue.equals(cursor.getString(columnIdx))) {
                         mReverseIdx.append(cursor.getPosition(), count);
                         count++;
@@ -41,7 +45,7 @@ public class SimpleEqualsFilter extends FilterCursor.Filter {
                 }
                 break;
             case Cursor.FIELD_TYPE_FLOAT:
-                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
                     if (mValue.equals(cursor.getFloat(columnIdx))) {
                         mReverseIdx.append(cursor.getPosition(), count);
                         count++;
@@ -49,7 +53,7 @@ public class SimpleEqualsFilter extends FilterCursor.Filter {
                 }
                 break;
             case Cursor.FIELD_TYPE_BLOB:
-                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
                     if (mValue.equals(cursor.getBlob(columnIdx))) {
                         mReverseIdx.append(cursor.getPosition(), count);
                         count++;
