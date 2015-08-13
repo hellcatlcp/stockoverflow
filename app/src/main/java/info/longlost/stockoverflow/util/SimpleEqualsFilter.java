@@ -2,6 +2,7 @@ package info.longlost.stockoverflow.util;
 
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.util.SparseIntArray;
 
 /**
  * Created by ldenison on 12/08/2015.
@@ -19,47 +20,48 @@ public class SimpleEqualsFilter extends FilterCursor.Filter {
     @Override
     public void buildIndex(Cursor cursor, String[] orderingHint) {
         cursor.moveToFirst();
+        mReverseIdx = new SparseIntArray(cursor.getCount());
+        mForwardIdx = new int[cursor.getCount()];
+
 
         int columnIdx = cursor.getColumnIndex(mColumn);
-        String dump = DatabaseUtils.dumpCursorToString(cursor);
         int columnType = cursor.getType(columnIdx);
         int count = 0;
 
-        switch (columnType) {
+        for (; !cursor.isAfterLast(); cursor.moveToNext()) {
+            switch (columnType) {
             case Cursor.FIELD_TYPE_NULL:
-                return;
+                if (mValue == null) {
+                    mReverseIdx.append(cursor.getPosition(), count);
+                    count++;
+                }
+                break;
             case Cursor.FIELD_TYPE_INTEGER:
-                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
-                    if (mValue.equals(cursor.getInt(columnIdx))) {
-                        mReverseIdx.append(cursor.getPosition(), count);
-                        count++;
-                    }
+                if (mValue != null && mValue.equals(cursor.getLong(columnIdx))) {
+                    mReverseIdx.append(cursor.getPosition(), count);
+                    count++;
                 }
                 break;
             case Cursor.FIELD_TYPE_STRING:
-                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
-                    if (mValue.equals(cursor.getString(columnIdx))) {
-                        mReverseIdx.append(cursor.getPosition(), count);
-                        count++;
-                    }
+                if (mValue != null && mValue.equals(cursor.getString(columnIdx))) {
+                    mReverseIdx.append(cursor.getPosition(), count);
+                    count++;
                 }
                 break;
             case Cursor.FIELD_TYPE_FLOAT:
-                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
-                    if (mValue.equals(cursor.getFloat(columnIdx))) {
-                        mReverseIdx.append(cursor.getPosition(), count);
-                        count++;
-                    }
+                if (mValue != null && mValue.equals(cursor.getFloat(columnIdx))) {
+                    mReverseIdx.append(cursor.getPosition(), count);
+                    count++;
                 }
                 break;
             case Cursor.FIELD_TYPE_BLOB:
-                for (; !cursor.isAfterLast(); cursor.moveToNext()) {
-                    if (mValue.equals(cursor.getBlob(columnIdx))) {
-                        mReverseIdx.append(cursor.getPosition(), count);
-                        count++;
-                    }
+                if (mValue != null && mValue.equals(cursor.getBlob(columnIdx))) {
+                    mReverseIdx.append(cursor.getPosition(), count);
+                    count++;
                 }
                 break;
+            }
+
         }
 
         mForwardIdx = new int[count];

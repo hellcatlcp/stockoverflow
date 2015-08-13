@@ -321,6 +321,7 @@ public class NavigationDrawerFragment extends Fragment implements
                 return new CursorLoader(getActivity(),
                         PortfolioStockMap.CONTENT_URI,
                         new String[] {
+                                PortfolioStockMap._ID,
                                 PortfolioStockMap.COLUMN_PORTFOLIO_ID,
                                 PortfolioStockMap.COLUMN_STOCK_ID,
                                 StockEntry.COLUMN_TICKER
