@@ -473,12 +473,12 @@ public class NavigationDrawerFragment extends Fragment implements
         protected Cursor getChildrenCursor(Cursor groupCursor) {
             int columnIdx = groupCursor.getColumnIndex(PortfolioEntry._ID);
 
-            if (groupCursor != null && mStocksCursor != null) {
+            if (mStocksCursor != null) {
                 long portfolioId = groupCursor.getLong(columnIdx);
 
                 return new FilterCursor(mStocksCursor,
                         new SimpleEqualsFilter(PortfolioStockMap.COLUMN_PORTFOLIO_ID,
-                                new Long(portfolioId)));
+                                Long.valueOf(portfolioId)));
             } else {
                 return null;
             }
