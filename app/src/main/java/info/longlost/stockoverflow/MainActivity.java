@@ -10,10 +10,10 @@ import android.support.v4.widget.DrawerLayout;
 
 
 public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+        BaseFragment.OnActionBarListener {
 
-    public static final int MY_PORFOLIO_FRAGMENT = 0;
-    public static final int STOCK_FRAGMENT = 1;
+    public static final String ARG_TITLE = "title";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -60,14 +60,11 @@ public class MainActivity extends ActionBarActivity
                 .commit();
     }
 
-    public void onSectionAttached(int fragment) {
-        switch (fragment) {
-            case MY_PORFOLIO_FRAGMENT:
-                mTitle = getString(R.string.title_myportfolio);
-                break;
-            case STOCK_FRAGMENT:
-                mTitle = getString(R.string.title_stock);
-                break;
+    @Override
+    public void onUpdateActionBar(String title) {
+        if (title != null) {
+            mTitle = title;
+            restoreActionBar();
         }
     }
 
@@ -101,5 +98,4 @@ public class MainActivity extends ActionBarActivity
 
         return super.onOptionsItemSelected(item);
     }
-
 }

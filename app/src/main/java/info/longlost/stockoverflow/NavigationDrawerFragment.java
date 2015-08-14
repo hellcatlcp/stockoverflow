@@ -52,9 +52,7 @@ public class NavigationDrawerFragment extends Fragment implements
     /**
      * Remember the position of the selected item.
      */
-    private static final String STATE_SELECTED_PORTFOLIO_POS = "selected_portfolio_pos";
     private static final String STATE_SELECTED_PORTFOLIO_ID = "selected_portfolio_id";
-    private static final String STATE_SELECTED_STOCK_POS = "selected_stock_pos";
     private static final String STATE_SELECTED_STOCK_ID = "selected_stock_id";
 
     /**
@@ -84,9 +82,7 @@ public class NavigationDrawerFragment extends Fragment implements
     private DrawerCursorAdapter mDrawerListAdapter;
     private View mFragmentContainerView;
 
-    private int mSelectedPortfolioPos = -1;
     private long mSelectedPortfolioId = -1;
-    private int mSelectedStockPos = -1;
     private long mSelectedStockId = -1;
 
     private boolean mFromSavedInstanceState;
@@ -103,30 +99,26 @@ public class NavigationDrawerFragment extends Fragment implements
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
 
-        int selectedPortfolioPos = 0;
         long selectedPortfolioId = -1;
-        int selectedStockPos = -1;
         long selectedStockId = -1;
 
         if (savedInstanceState != null) {
-            selectedPortfolioPos = savedInstanceState.getInt(STATE_SELECTED_PORTFOLIO_POS, 0);
             selectedPortfolioId = savedInstanceState.getLong(STATE_SELECTED_PORTFOLIO_ID, -1);
-            selectedStockPos = savedInstanceState.getInt(STATE_SELECTED_STOCK_POS, -1);
             selectedStockId = savedInstanceState.getLong(STATE_SELECTED_STOCK_ID, -1);
             mFromSavedInstanceState = true;
         }
 
         // Select either the default item (0) or the last selected item.
-        setSelection(selectedPortfolioId, selectedPortfolioPos, selectedStockId, selectedStockPos);
+        updateSelection(selectedPortfolioId, selectedStockId);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Indicate that this fragment would like to influence the set of actions in the action bar.
+        setHasOptionsMenu(true);
         getLoaderManager().initLoader(PORTFOLIO_LOADER, null, this);
         getLoaderManager().initLoader(STOCK_LOADER, null, this);
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -147,7 +139,8 @@ public class NavigationDrawerFragment extends Fragment implements
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int portfolioPos, int stockPos, long stockId) {
                 int flatListPos =
-                        parent.getFlatListPosition(parent.getPackedPositionForGroup(portfolioPos));
+                        parent.getFlatListPosition(
+                                ExpandableListView.getPackedPositionForGroup(portfolioPos));
                 long portfolioId = parent.getItemIdAtPosition(flatListPos);
                 setSelection(portfolioId, portfolioPos, stockId, stockPos);
                 return true;
@@ -246,46 +239,83 @@ public class NavigationDrawerFragment extends Fragment implements
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
+    private void updateSelection(long selectedPortfolioId, long selectedStockId) {
+        int portfolioPos = -1;
+        int stockPos = -1;
+
+        // Validate selected portfolio and stock IDs.
+        // Set the position values based on the selected IDs.
+        if (mPortfolioCursor != null && mPortfolioCursor.getCount() > 0) {
+            Cursor portfolioCursor = mDrawerListAdapter.getCursor();
+            int portfolioIdIdx = portfolioCursor.getColumnIndex(PortfolioEntry._ID);
+
+            for (portfolioCursor.moveToFirst(); !portfolioCursor.isAfterLast(); portfolioCursor.moveToNext()) {
+                if (portfolioCursor.getLong(portfolioIdIdx) == selectedPortfolioId) {
+                    portfolioPos = portfolioCursor.getPosition();
+                }
+            }
+
+            if (portfolioPos < 0) {
+                // selectedPortfolioId does not exist in the cursor.
+                // Select the first portfolio and reset the selected stock
+                mPortfolioCursor.moveToFirst();
+                selectedPortfolioId = mPortfolioCursor.getLong(portfolioIdIdx);
+                portfolioPos = 0;
+                selectedStockId = -1;
+            } else if (mStocksCursor != null && mStocksCursor.getCount() > 0 && selectedStockId >= 0) {
+                Cursor stockCursor = mDrawerListAdapter.getChildrenCursor(portfolioCursor);
+                int stockIdIdx = stockCursor.getColumnIndex(PortfolioStockMap._ID);
+
+                for (stockCursor.moveToFirst(); !stockCursor.isAfterLast(); stockCursor.moveToNext()) {
+                    if (stockCursor.getLong(stockIdIdx) == selectedStockId) {
+                        stockPos = stockCursor.getPosition();
+                    }
+                }
+            }
+        }
+
+        setSelection(selectedPortfolioId, portfolioPos, selectedStockId, stockPos);
+    }
+
     private void setSelection(long selectedPortfolioId,
-                             int selectedPortfolioPos,
-                             long selectedStockId,
-                             int selectedStockPos) {
-        // When the fragment is initialized cursors may be null, list adapters, layouts and callbacks may be null
+                              int selectedPortfolioPos,
+                              long selectedStockId,
+                              int selectedStockPos) {
+        // update checked item if possible
+        if (mDrawerListView != null) {
+            int flatPos;
 
-        // Cursor content may be different so that positions / ids may be invalid
+            if (selectedStockId >= 0) {
+                flatPos = mDrawerListView.getFlatListPosition(
+                        ExpandableListView.getPackedPositionForChild(selectedPortfolioPos,
+                                selectedStockPos));
+            } else {
+                flatPos = mDrawerListView.getFlatListPosition(
+                        ExpandableListView.getPackedPositionForGroup(selectedPortfolioPos));
+            }
 
-        // Current positions and ids are held in member variables, parameters represent requested state
-
-        // member variables should be set at the end of the method
-
-        // callback should only be triggered if the ids change
-
-        // checked item should only updated if pos is changed
-
-
-
-
-        // validate selected portfolio pos / id and stock pos / id if possible - change as necessary
-
-        // update checked item if possible / necessary
-        //if (mDrawerListView != null) {
-        //    mDrawerListView.setItemChecked(position, true);
-        //}
+            mDrawerListView.setItemChecked(flatPos, true);
+        }
 
         // close drawer if possible
-        //if (mDrawerLayout != null) {
-        //    mDrawerLayout.closeDrawer(mFragmentContainerView);
-        //}
+        if (mDrawerLayout != null) {
+            mDrawerLayout.closeDrawer(mFragmentContainerView);
+        }
 
-        // callback if possible / necessary
-        //if (mCallbacks != null) {
-        //    if (position == 0) {
-        //        mCallbacks.onNavigationDrawerItemSelected(MainActivity.MY_PORFOLIO_FRAGMENT, null);
-        //    }
-        //}
+        // callback if necessary
+        if (mCallbacks != null) {
+            if (selectedStockId >= 0 && selectedStockId != mSelectedStockId) {
+                mCallbacks.onStockSelected(selectedStockId);
+            } else if (selectedStockId < 0 &&
+                    selectedPortfolioId >= 0 &&
+                    selectedPortfolioId != mSelectedPortfolioId) {
+                mCallbacks.onPortfolioSelected(selectedPortfolioId);
+            }
+        }
 
         // update member variables
-        //mCurrentSelectedPosition = position;
+        mSelectedPortfolioId = selectedPortfolioId;
+        mSelectedStockId = selectedStockId;
     }
 
     @Override
@@ -307,9 +337,7 @@ public class NavigationDrawerFragment extends Fragment implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SELECTED_PORTFOLIO_POS, mSelectedPortfolioPos);
         outState.putLong(STATE_SELECTED_PORTFOLIO_ID, mSelectedPortfolioId);
-        outState.putInt(STATE_SELECTED_STOCK_POS, mSelectedStockPos);
         outState.putLong(STATE_SELECTED_STOCK_ID, mSelectedStockId);
     }
 
@@ -399,10 +427,8 @@ public class NavigationDrawerFragment extends Fragment implements
 
                 if (mStocksCursor != null) {
                     setStockCursors(mPortfolioCursor, mStocksCursor);
-                    setSelection(mSelectedPortfolioId,
-                            mSelectedPortfolioPos,
-                            mSelectedStockId,
-                            mSelectedStockPos);
+                    // TODO: defer this to the message loop
+                    updateSelection(mSelectedPortfolioId, mSelectedStockId);
                 }
 
 
@@ -412,10 +438,8 @@ public class NavigationDrawerFragment extends Fragment implements
 
                 if (mPortfolioCursor != null) {
                     setStockCursors(mPortfolioCursor, mStocksCursor);
-                    setSelection(mSelectedPortfolioId,
-                            mSelectedPortfolioPos,
-                            mSelectedStockId,
-                            mSelectedStockPos);
+                    // TODO: defer this to the message loop
+                    updateSelection(mSelectedPortfolioId, mSelectedStockId);
                 }
                 break;
         }
@@ -431,7 +455,7 @@ public class NavigationDrawerFragment extends Fragment implements
 
             mDrawerListAdapter.setChildrenCursor(pos, new FilterCursor(stocksCursor,
                     new SimpleEqualsFilter(PortfolioStockMap.COLUMN_PORTFOLIO_ID,
-                            new Long(portfolioId))));
+                            Long.valueOf(portfolioId))));
             pos++;
         }
     }
@@ -439,19 +463,19 @@ public class NavigationDrawerFragment extends Fragment implements
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         int pos = 0;
-        Cursor groupCursor = mDrawerListAdapter.getCursor();
-        int columnIdx = groupCursor.getColumnIndex(PortfolioEntry._ID);
+        Cursor portfolioCursor = mDrawerListAdapter.getCursor();
+        int columnIdx = portfolioCursor.getColumnIndex(PortfolioEntry._ID);
 
         switch (loader.getId()) {
             case PORTFOLIO_LOADER:
-                for (groupCursor.moveToFirst(); !groupCursor.isAfterLast(); groupCursor.moveToNext()) {
+                for (portfolioCursor.moveToFirst(); !portfolioCursor.isAfterLast(); portfolioCursor.moveToNext()) {
                     mDrawerListAdapter.setChildrenCursor(pos, null);
                     pos++;
                 }
                 mDrawerListAdapter.setGroupCursor(null);
                 break;
             case STOCK_LOADER:
-                for (groupCursor.moveToFirst(); !groupCursor.isAfterLast(); groupCursor.moveToNext()) {
+                for (portfolioCursor.moveToFirst(); !portfolioCursor.isAfterLast(); portfolioCursor.moveToNext()) {
                     mDrawerListAdapter.setChildrenCursor(pos, null);
                     pos++;
                 }
