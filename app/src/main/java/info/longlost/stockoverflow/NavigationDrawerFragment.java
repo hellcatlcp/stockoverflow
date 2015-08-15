@@ -2,7 +2,6 @@ package info.longlost.stockoverflow;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -23,18 +22,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.SimpleCursorTreeAdapter;
-import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import info.longlost.stockoverflow.data.StockContract;
 import info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
 import info.longlost.stockoverflow.data.StockContract.StockEntry;
 import info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
@@ -62,7 +53,7 @@ public class NavigationDrawerFragment extends Fragment implements
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
 
     private static final int PORTFOLIO_LOADER = 100;
-    private static final int STOCK_LOADER = 200;
+    private static final int STOCK_MAP_LOADER = 200;
 
     /**
      * A pointer to the current callbacks instance (the Activity).
@@ -75,7 +66,7 @@ public class NavigationDrawerFragment extends Fragment implements
     private ActionBarDrawerToggle mDrawerToggle;
 
     private Cursor mPortfolioCursor;
-    private Cursor mStocksCursor;
+    private Cursor mStocksMapCursor;
 
     private DrawerLayout mDrawerLayout;
     private ExpandableListView mDrawerListView;
@@ -118,7 +109,7 @@ public class NavigationDrawerFragment extends Fragment implements
         // Indicate that this fragment would like to influence the set of actions in the action bar.
         setHasOptionsMenu(true);
         getLoaderManager().initLoader(PORTFOLIO_LOADER, null, this);
-        getLoaderManager().initLoader(STOCK_LOADER, null, this);
+        getLoaderManager().initLoader(STOCK_MAP_LOADER, null, this);
     }
 
     @Override
@@ -129,20 +120,20 @@ public class NavigationDrawerFragment extends Fragment implements
 
         mDrawerListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
-            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-                setSelection(id, groupPosition, -1, -1);
+            public boolean onGroupClick(ExpandableListView parent, View v, int portfolioPos, long portfolioId) {
+                setSelection(portfolioId, portfolioPos, -1, -1);
                 return true;
             }
         });
 
         mDrawerListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int portfolioPos, int stockPos, long stockId) {
+            public boolean onChildClick(ExpandableListView parent, View v, int portfolioPos, int stockPos, long stockMapId) {
                 int flatListPos =
                         parent.getFlatListPosition(
                                 ExpandableListView.getPackedPositionForGroup(portfolioPos));
                 long portfolioId = parent.getItemIdAtPosition(flatListPos);
-                setSelection(portfolioId, portfolioPos, stockId, stockPos);
+                setSelection(portfolioId, portfolioPos, stockMapId, stockPos);
                 return true;
             }
         });
@@ -262,7 +253,7 @@ public class NavigationDrawerFragment extends Fragment implements
                 selectedPortfolioId = mPortfolioCursor.getLong(portfolioIdIdx);
                 portfolioPos = 0;
                 selectedStockId = -1;
-            } else if (mStocksCursor != null && mStocksCursor.getCount() > 0 && selectedStockId >= 0) {
+            } else if (mStocksMapCursor != null && mStocksMapCursor.getCount() > 0 && selectedStockId >= 0) {
                 Cursor stockCursor = mDrawerListAdapter.getChildrenCursor(portfolioCursor);
                 int stockIdIdx = stockCursor.getColumnIndex(PortfolioStockMap._ID);
 
@@ -401,7 +392,7 @@ public class NavigationDrawerFragment extends Fragment implements
                         null,
                         null,
                         null);
-            case STOCK_LOADER:
+            case STOCK_MAP_LOADER:
                 return new CursorLoader(getActivity(),
                         PortfolioStockMap.CONTENT_URI,
                         new String[] {
@@ -425,21 +416,31 @@ public class NavigationDrawerFragment extends Fragment implements
                 mPortfolioCursor = data;
                 mDrawerListAdapter.setGroupCursor(data);
 
-                if (mStocksCursor != null) {
-                    setStockCursors(mPortfolioCursor, mStocksCursor);
-                    // TODO: defer this to the message loop
-                    updateSelection(mSelectedPortfolioId, mSelectedStockId);
+                if (mStocksMapCursor != null) {
+                    setStockCursors(mPortfolioCursor, mStocksMapCursor);
+
+                    // defer this to the message loop
+                    mDrawerLayout.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateSelection(mSelectedPortfolioId, mSelectedStockId);
+                        }
+                    });
                 }
-
-
                 break;
-            case STOCK_LOADER:
-                mStocksCursor = data;
+            case STOCK_MAP_LOADER:
+                mStocksMapCursor = data;
 
                 if (mPortfolioCursor != null) {
-                    setStockCursors(mPortfolioCursor, mStocksCursor);
-                    // TODO: defer this to the message loop
-                    updateSelection(mSelectedPortfolioId, mSelectedStockId);
+                    setStockCursors(mPortfolioCursor, mStocksMapCursor);
+
+                    // defer this to the message loop
+                    mDrawerLayout.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateSelection(mSelectedPortfolioId, mSelectedStockId);
+                        }
+                    });
                 }
                 break;
         }
@@ -474,7 +475,7 @@ public class NavigationDrawerFragment extends Fragment implements
                 }
                 mDrawerListAdapter.setGroupCursor(null);
                 break;
-            case STOCK_LOADER:
+            case STOCK_MAP_LOADER:
                 for (portfolioCursor.moveToFirst(); !portfolioCursor.isAfterLast(); portfolioCursor.moveToNext()) {
                     mDrawerListAdapter.setChildrenCursor(pos, null);
                     pos++;
@@ -497,10 +498,10 @@ public class NavigationDrawerFragment extends Fragment implements
         protected Cursor getChildrenCursor(Cursor groupCursor) {
             int columnIdx = groupCursor.getColumnIndex(PortfolioEntry._ID);
 
-            if (mStocksCursor != null) {
+            if (mStocksMapCursor != null) {
                 long portfolioId = groupCursor.getLong(columnIdx);
 
-                return new FilterCursor(mStocksCursor,
+                return new FilterCursor(mStocksMapCursor,
                         new SimpleEqualsFilter(PortfolioStockMap.COLUMN_PORTFOLIO_ID,
                                 Long.valueOf(portfolioId)));
             } else {

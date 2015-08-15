@@ -56,7 +56,7 @@ public class MainActivity extends ActionBarActivity
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         fragmentManager.beginTransaction()
-                .replace(R.id.container, StockFragment.newInstance(stockId))
+                .replace(R.id.container, StockMapFragment.newInstance(stockId))
                 .commit();
     }
 
