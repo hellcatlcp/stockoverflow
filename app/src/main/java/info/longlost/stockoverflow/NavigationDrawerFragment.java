@@ -70,7 +70,7 @@ public class NavigationDrawerFragment extends Fragment implements
 
     private DrawerLayout mDrawerLayout;
     private ExpandableListView mDrawerListView;
-    private DrawerCursorAdapter mDrawerListAdapter;
+    private SimpleCursorTreeAdapter mDrawerListAdapter;
     private View mFragmentContainerView;
 
     private long mSelectedPortfolioId = -1;
@@ -122,7 +122,8 @@ public class NavigationDrawerFragment extends Fragment implements
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v, int portfolioPos, long portfolioId) {
                 setSelection(portfolioId, portfolioPos, -1, -1);
-                return true;
+                // return false so that the ExpandableListView handles expanding / collapsing.
+                return false;
             }
         });
 
@@ -138,7 +139,7 @@ public class NavigationDrawerFragment extends Fragment implements
             }
         });
 
-        mDrawerListAdapter = new DrawerCursorAdapter(this.getActivity(), null,
+        mDrawerListAdapter = new SimpleCursorTreeAdapter(this.getActivity(), null,
                 android.R.layout.simple_list_item_1,
                 android.R.layout.simple_list_item_activated_1,
                 new String[] {PortfolioEntry.COLUMN_PORTFOLIO_NAME},
@@ -146,7 +147,10 @@ public class NavigationDrawerFragment extends Fragment implements
                 android.R.layout.simple_list_item_1,
                 android.R.layout.simple_list_item_1,
                 new String[] {StockEntry.COLUMN_TICKER},
-                new int[] {android.R.id.text1});
+                new int[] {android.R.id.text1}) {
+            @Override
+            protected Cursor getChildrenCursor(Cursor groupCursor) { return null; }
+        };
 
         mDrawerListView.setAdapter(mDrawerListAdapter);
         return mDrawerListView;
@@ -243,6 +247,7 @@ public class NavigationDrawerFragment extends Fragment implements
             for (portfolioCursor.moveToFirst(); !portfolioCursor.isAfterLast(); portfolioCursor.moveToNext()) {
                 if (portfolioCursor.getLong(portfolioIdIdx) == selectedPortfolioId) {
                     portfolioPos = portfolioCursor.getPosition();
+                    break;
                 }
             }
 
@@ -254,12 +259,14 @@ public class NavigationDrawerFragment extends Fragment implements
                 portfolioPos = 0;
                 selectedStockId = -1;
             } else if (mStocksMapCursor != null && mStocksMapCursor.getCount() > 0 && selectedStockId >= 0) {
-                Cursor stockCursor = mDrawerListAdapter.getChildrenCursor(portfolioCursor);
-                int stockIdIdx = stockCursor.getColumnIndex(PortfolioStockMap._ID);
+                int childCount = mDrawerListAdapter.getChildrenCount(portfolioPos);
 
-                for (stockCursor.moveToFirst(); !stockCursor.isAfterLast(); stockCursor.moveToNext()) {
-                    if (stockCursor.getLong(stockIdIdx) == selectedStockId) {
-                        stockPos = stockCursor.getPosition();
+                for (int i = 0; i < childCount; i++) {
+                    Cursor child = mDrawerListAdapter.getChild(portfolioPos, i);
+                    int stockIdIdx = child.getColumnIndex(PortfolioStockMap._ID);
+                    if (child.getLong(stockIdIdx) == selectedStockId) {
+                        stockPos = i;
+                        break;
                     }
                 }
             }
@@ -481,32 +488,6 @@ public class NavigationDrawerFragment extends Fragment implements
                     pos++;
                 }
                 break;
-        }
-    }
-
-    private class DrawerCursorAdapter extends SimpleCursorTreeAdapter {
-
-        public DrawerCursorAdapter(Context context, Cursor cursor, int collapsedGroupLayout,
-                                   int expandedGroupLayout, String[] groupFrom, int[] groupTo,
-                                   int childLayout, int lastChildLayout, String[] childFrom,
-                                   int[] childTo) {
-            super(context, cursor, collapsedGroupLayout, expandedGroupLayout, groupFrom, groupTo,
-                    childLayout, lastChildLayout, childFrom, childTo);
-        }
-
-        @Override
-        protected Cursor getChildrenCursor(Cursor groupCursor) {
-            int columnIdx = groupCursor.getColumnIndex(PortfolioEntry._ID);
-
-            if (mStocksMapCursor != null) {
-                long portfolioId = groupCursor.getLong(columnIdx);
-
-                return new FilterCursor(mStocksMapCursor,
-                        new SimpleEqualsFilter(PortfolioStockMap.COLUMN_PORTFOLIO_ID,
-                                Long.valueOf(portfolioId)));
-            } else {
-                return null;
-            }
         }
     }
 
