@@ -70,7 +70,7 @@ public class NavigationDrawerFragment extends Fragment implements
 
     private DrawerLayout mDrawerLayout;
     private ExpandableListView mDrawerListView;
-    private SimpleCursorTreeAdapter mDrawerListAdapter;
+    private DrawerCursorAdapter mDrawerListAdapter;
     private View mFragmentContainerView;
 
     private long mSelectedPortfolioId = -1;
@@ -139,7 +139,7 @@ public class NavigationDrawerFragment extends Fragment implements
             }
         });
 
-        mDrawerListAdapter = new SimpleCursorTreeAdapter(this.getActivity(), null,
+        mDrawerListAdapter = new DrawerCursorAdapter(this.getActivity(), null,
                 android.R.layout.simple_list_item_1,
                 android.R.layout.simple_list_item_activated_1,
                 new String[] {PortfolioEntry.COLUMN_PORTFOLIO_NAME},
@@ -147,10 +147,7 @@ public class NavigationDrawerFragment extends Fragment implements
                 android.R.layout.simple_list_item_1,
                 android.R.layout.simple_list_item_1,
                 new String[] {StockEntry.COLUMN_TICKER},
-                new int[] {android.R.id.text1}) {
-            @Override
-            protected Cursor getChildrenCursor(Cursor groupCursor) { return null; }
-        };
+                new int[] {android.R.id.text1});
 
         mDrawerListView.setAdapter(mDrawerListAdapter);
         return mDrawerListView;
@@ -259,13 +256,12 @@ public class NavigationDrawerFragment extends Fragment implements
                 portfolioPos = 0;
                 selectedStockId = -1;
             } else if (mStocksMapCursor != null && mStocksMapCursor.getCount() > 0 && selectedStockId >= 0) {
-                int childCount = mDrawerListAdapter.getChildrenCount(portfolioPos);
+                Cursor stockCursor = mDrawerListAdapter.getChildrenCursor(portfolioCursor);
+                int stockIdIdx = stockCursor.getColumnIndex(PortfolioStockMap._ID);
 
-                for (int i = 0; i < childCount; i++) {
-                    Cursor child = mDrawerListAdapter.getChild(portfolioPos, i);
-                    int stockIdIdx = child.getColumnIndex(PortfolioStockMap._ID);
-                    if (child.getLong(stockIdIdx) == selectedStockId) {
-                        stockPos = i;
+                for (stockCursor.moveToFirst(); !stockCursor.isAfterLast(); stockCursor.moveToNext()) {
+                    if (stockCursor.getLong(stockIdIdx) == selectedStockId) {
+                        stockPos = stockCursor.getPosition();
                         break;
                     }
                 }
@@ -488,6 +484,38 @@ public class NavigationDrawerFragment extends Fragment implements
                     pos++;
                 }
                 break;
+        }
+    }
+
+    // TODO: Generify this to be FilterCursorAdapter probably.
+    // TODO: Override onGroupCollapse and don't close the cursor.
+    // TODO: Maintain a mapping of all filtered child cursors and return the right one for a group.
+    // TODO: Update loader callbacks to reset and rebuild the mapping as necessary.
+    private class DrawerCursorAdapter extends SimpleCursorTreeAdapter {
+
+        public DrawerCursorAdapter(Context context, Cursor cursor, int collapsedGroupLayout,
+                                   int expandedGroupLayout, String[] groupFrom, int[] groupTo,
+                                   int childLayout, int lastChildLayout, String[] childFrom,
+                                   int[] childTo) {
+            super(context, cursor, collapsedGroupLayout, expandedGroupLayout, groupFrom, groupTo,
+                    childLayout, lastChildLayout, childFrom, childTo);
+        }
+
+        @Override
+        protected Cursor getChildrenCursor(Cursor portfolioCursor) {
+            int columnIdx = portfolioCursor.getColumnIndex(PortfolioEntry._ID);
+
+            if (mStocksMapCursor != null) {
+                int portfolioPos = portfolioCursor.getPosition();
+
+                long portfolioId = portfolioCursor.getLong(columnIdx);
+
+                //return new FilterCursor(mStocksMapCursor,
+                //        new SimpleEqualsFilter(PortfolioStockMap.COLUMN_PORTFOLIO_ID,
+                //                Long.valueOf(portfolioId)));
+            } else {
+                return null;
+            }
         }
     }
 
