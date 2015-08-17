@@ -296,11 +296,6 @@ public class NavigationDrawerFragment extends Fragment implements
             mDrawerListView.setItemChecked(flatPos, true);
         }
 
-        // close drawer if possible
-        if (mDrawerLayout != null && selectedStockId != -1) {
-            mDrawerLayout.closeDrawer(mFragmentContainerView);
-        }
-
         // callback if necessary
         if (mCallbacks != null) {
             if (selectedStockId >= 0 && selectedStockId != mSelectedStockId) {
