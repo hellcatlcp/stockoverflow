@@ -14,6 +14,7 @@ public class StockContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String STOCKS_LOCATION =  "stock";
     public static final String PORTFOLIOS_LOCATION =  "portfolio";
+    public static final String PRICE_LOCATION = "price";
 
     //Create database table for a set of stocks
 
@@ -51,7 +52,7 @@ public class StockContract {
         public static final String COLUMN_PORTFOLIO_NAME = "portfolio";
 
 
-        public static Uri buildPortfolioUri(long  portfolio_id) {
+        public static Uri buildPortfolioUri(long portfolio_id) {
             return ContentUris.withAppendedId(CONTENT_URI, portfolio_id);
         }
 
@@ -77,6 +78,31 @@ public class StockContract {
 
     }
 
+    public static final class PriceEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PRICE_LOCATION).build();
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PRICE_LOCATION;
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PRICE_LOCATION;
+        public static final String TABLE_NAME = "prices";
+        public static final String COLUMN_STOCK_ID = "stock_id";
+        public static final String COLUMN_DATE = "price_date";
+        public static final String COLUMN_OPEN = "open";
+        public static final String COLUMN_HIGH= "high";
+        public static final String COLUMN_LOW = "low";
+        public static final String COLUMN_CLOSE = "close";
+        public static final String COLUMN_VOLUME = "volume";
+        public static final String VALUE_LATEST = "latest";
+
+        public static Uri buildLatestStockPriceUri(long stock_id) {
+            return ContentUris.withAppendedId(CONTENT_URI, stock_id).buildUpon().appendPath(PRICE_LOCATION).build();
+        }
+
+        public static String getLatestPriceStockId(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+    }
 }
 
 

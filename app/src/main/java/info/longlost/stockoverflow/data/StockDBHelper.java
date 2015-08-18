@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import info.longlost.stockoverflow.data.StockContract.StockEntry;
 import info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
 import info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
+import info.longlost.stockoverflow.data.StockContract.PriceEntry;
 
 
 /**
@@ -56,6 +57,18 @@ public class StockDBHelper extends SQLiteOpenHelper{
                 PortfolioStockMap.TABLE_NAME + "." + PortfolioStockMap.COLUMN_STOCK_ID;
 
         db.execSQL(SQL_CREATE_STOCKS_VIEW);
+
+        final String SQL_CREATE_STOCK_PRICE_TABLE = "CREATE TABLE " + PriceEntry.TABLE_NAME + " (" +
+                PriceEntry._ID + " INTEGER PRIMARY KEY," +
+                PriceEntry.COLUMN_STOCK_ID + " INTEGER NOT NULL," +
+                PriceEntry.COLUMN_DATE + " INTEGER NOT NULL," +
+                PriceEntry.COLUMN_OPEN + " REAL NOT NULL," +
+                PriceEntry.COLUMN_HIGH + " REAL NOT NULL," +
+                PriceEntry.COLUMN_LOW + " REAL NOT NULL," +
+                PriceEntry.COLUMN_CLOSE + " REAL NOT NULL," +
+                PriceEntry.COLUMN_VOLUME + " INTEGER NOT NULL);";
+
+        db.execSQL(SQL_CREATE_STOCK_PRICE_TABLE);
 
         // Create static 'My Portfolio' Entry
         ContentValues values = new ContentValues();

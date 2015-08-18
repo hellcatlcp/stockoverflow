@@ -7,14 +7,18 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import info.longlost.stockoverflow.util.SelectionBuilder;
 
 import static info.longlost.stockoverflow.data.StockContract.StockEntry;
 import static info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
 import static info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
+import static info.longlost.stockoverflow.data.StockContract.PriceEntry;
 import static info.longlost.stockoverflow.data.StockContract.STOCKS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PORTFOLIOS_LOCATION;
+import static info.longlost.stockoverflow.data.StockContract.PRICE_LOCATION;
+import static info.longlost.stockoverflow.data.StockContract.PriceEntry.VALUE_LATEST;
 
 /**
  * Created by ldenison on 02/08/2015.
@@ -25,14 +29,17 @@ public class StockProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private StockDBHelper mOpenHelper;
 
-    static final int STOCK_ID = 100;
-    static final int STOCK = 101;
+    static final int STOCK = 100;
+    static final int STOCK_ID = 101;
+    static final int STOCK_ID_PRICE_LATEST = 102;
 
-    static final int PORTFOLIO_ID = 200;
-    static final int PORTFOLIO = 201;
-    static final int PORTFOLIO_STOCKS = 202;
-    static final int PORTFOLIO_ID_STOCKS = 203;
-    static final int PORTFOLIO_STOCKS_ID = 204;
+    static final int PORTFOLIO = 200;
+    static final int PORTFOLIO_ID = 201;
+    static final int PORTFOLIO_STOCK = 202;
+    static final int PORTFOLIO_ID_STOCK = 203;
+    static final int PORTFOLIO_ID_STOCK_ID = 204;
+
+    static final int PRICE = 300;
 
     @Override
     public boolean onCreate() {
@@ -44,16 +51,19 @@ public class StockProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = StockContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority, STOCKS_LOCATION + "/*", STOCK_ID);
         matcher.addURI(authority, STOCKS_LOCATION, STOCK);
+        matcher.addURI(authority, STOCKS_LOCATION + "/*", STOCK_ID);
+        matcher.addURI(authority, STOCKS_LOCATION + "/*/" + VALUE_LATEST, STOCK_ID_PRICE_LATEST);
 
-        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*", PORTFOLIO_ID);
         matcher.addURI(authority, PORTFOLIOS_LOCATION, PORTFOLIO);
-        matcher.addURI(authority, PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION, PORTFOLIO_STOCKS);
+        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*", PORTFOLIO_ID);
+        matcher.addURI(authority, PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION, PORTFOLIO_STOCK);
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION,
-                PORTFOLIO_ID_STOCKS);
+                PORTFOLIO_ID_STOCK);
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + STOCKS_LOCATION + "/*",
-                PORTFOLIO_STOCKS_ID);
+                PORTFOLIO_ID_STOCK_ID);
+
+        matcher.addURI(authority, PRICE_LOCATION, PRICE);
 
         return matcher;
     }
@@ -64,18 +74,22 @@ public class StockProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            case STOCK_ID:
-                return StockEntry.CONTENT_ITEM_TYPE;
             case STOCK:
                 return StockEntry.CONTENT_TYPE;
-            case PORTFOLIO_ID:
-                return PortfolioEntry.CONTENT_ITEM_TYPE;
+            case STOCK_ID:
+                return StockEntry.CONTENT_ITEM_TYPE;
+            case STOCK_ID_PRICE_LATEST:
+                return PriceEntry.CONTENT_ITEM_TYPE;
             case PORTFOLIO:
                 return PortfolioEntry.CONTENT_TYPE;
-            case PORTFOLIO_STOCKS:
+            case PORTFOLIO_ID:
+                return PortfolioEntry.CONTENT_ITEM_TYPE;
+            case PORTFOLIO_STOCK:
                 return PortfolioStockMap.CONTENT_TYPE;
-            case PORTFOLIO_STOCKS_ID:
+            case PORTFOLIO_ID_STOCK_ID:
                 return PortfolioStockMap.CONTENT_ITEM_TYPE;
+            case PRICE:
+                return PriceEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -89,6 +103,11 @@ public class StockProvider extends ContentProvider {
         SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
 
         switch (sUriMatcher.match(uri)) {
+            // "/stock"
+            case STOCK: {
+                tableName = StockEntry.TABLE_NAME;
+                break;
+            }
             // "/stock/*"
             case STOCK_ID: {
                 tableName = StockEntry.TABLE_NAME;
@@ -96,9 +115,9 @@ public class StockProvider extends ContentProvider {
                         new String[] { StockEntry.getStockId(uri) });
                 break;
             }
-            // "/stock"
-            case STOCK: {
-                tableName = StockEntry.TABLE_NAME;
+            // "/portfolio"
+            case PORTFOLIO: {
+                tableName = PortfolioEntry.TABLE_NAME;
                 break;
             }
             // "/portfolio/*"
@@ -108,17 +127,13 @@ public class StockProvider extends ContentProvider {
                         new String[] { PortfolioEntry.getPortfolioId(uri) });
                 break;
             }
-            // "/portfolio"
-            case PORTFOLIO: {
-                tableName = PortfolioEntry.TABLE_NAME;
-                break;
-            }
-            // "/portfolio/*/stock"
-            case PORTFOLIO_STOCKS: {
+            // "/portfolio-stock"
+            case PORTFOLIO_STOCK: {
                 tableName = PortfolioStockMap.STOCKS_VIEW;
                 break;
             }
-            case PORTFOLIO_ID_STOCKS: {
+            // "/portfolio/*/stock"
+            case PORTFOLIO_ID_STOCK: {
                 tableName = PortfolioStockMap.STOCKS_VIEW;
                 builder.add(PortfolioEntry._ID + "=?",
                         new String[] { PortfolioEntry.getPortfolioId(uri) });
@@ -143,7 +158,7 @@ public class StockProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         Uri returnUri;
@@ -166,6 +181,14 @@ public class StockProvider extends ContentProvider {
                     throw new SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case PORTFOLIO_ID_STOCK_ID:
+                long _id = db.insert(PortfolioEntry.TABLE_NAME, null, values);
+                if ( _id > 0 )
+                    returnUri = PortfolioEntry.buildPortfolioUri(values.getAsLong(
+                            PortfolioEntry._ID));
+                else
+                    throw new SQLException("Failed to insert row into " + uri);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
