@@ -24,13 +24,20 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SimpleTimeZone;
 import java.util.Vector;
 
+import info.longlost.stockoverflow.R;
 import info.longlost.stockoverflow.data.StockContract.StockEntry;
 import info.longlost.stockoverflow.data.StockContract.LatestPriceEntry;
 import info.longlost.stockoverflow.sync.yql.Contract;
+
+import static java.util.SimpleTimeZone.*;
 
 /**
  * Created by ldenison on 20/08/2015.
@@ -38,6 +45,7 @@ import info.longlost.stockoverflow.sync.yql.Contract;
 public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static final String TAG = PriceSyncAdapter.class.getSimpleName();
+    public static final SimpleTimeZone UTC = new SimpleTimeZone(UTC_TIME, "UTC");
 
     // Interval at which to sync with the prices, in seconds.
     public static final int SYNC_INTERVAL = 60 * 5;
@@ -180,6 +188,12 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
      * Store a cVVector of latest price data.
      */
     private void storePriceData(Vector<ContentValues> cVVector) {
+
+        Date now = new Date();
+        Calendar calendar = new GregorianCalendar(UTC);
+        calendar.setTime(now);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+
         int inserted = 0;
         // add to database
         if ( cVVector.size() > 0 ) {
@@ -190,11 +204,10 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
             // delete old data so we don't build up an endless history
             getContext().getContentResolver().delete(LatestPriceEntry.CONTENT_URI,
                     LatestPriceEntry.COLUMN_LAST_UPDATED + " <= ?",
-                    new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
-
+                    new String[] {Long.toString(calendar.getTimeInMillis())});
         }
 
-        Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
+        Log.d(TAG, "Sync Complete. " + cVVector.size() + " Inserted");
     }
 
 
