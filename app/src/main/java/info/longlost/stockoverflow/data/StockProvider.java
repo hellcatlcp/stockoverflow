@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 
 import info.longlost.stockoverflow.util.SelectionBuilder;
 
+import static info.longlost.stockoverflow.data.StockContract.LATEST_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.StockEntry;
 import static info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
 import static info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
@@ -18,7 +19,6 @@ import static info.longlost.stockoverflow.data.StockContract.PriceEntry;
 import static info.longlost.stockoverflow.data.StockContract.STOCKS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PORTFOLIOS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PRICE_LOCATION;
-import static info.longlost.stockoverflow.data.StockContract.PriceEntry.VALUE_LATEST;
 
 /**
  * Created by ldenison on 02/08/2015.
@@ -53,7 +53,7 @@ public class StockProvider extends ContentProvider {
 
         matcher.addURI(authority, STOCKS_LOCATION, STOCK);
         matcher.addURI(authority, STOCKS_LOCATION + "/*", STOCK_ID);
-        matcher.addURI(authority, STOCKS_LOCATION + "/*/" + VALUE_LATEST, STOCK_ID_PRICE_LATEST);
+        matcher.addURI(authority, STOCKS_LOCATION + "/*/" + LATEST_LOCATION, STOCK_ID_PRICE_LATEST);
 
         matcher.addURI(authority, PORTFOLIOS_LOCATION, PORTFOLIO);
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*", PORTFOLIO_ID);
