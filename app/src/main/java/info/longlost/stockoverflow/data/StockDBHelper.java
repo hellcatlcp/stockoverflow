@@ -9,6 +9,7 @@ import info.longlost.stockoverflow.data.StockContract.StockEntry;
 import info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
 import info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
 import info.longlost.stockoverflow.data.StockContract.PriceEntry;
+import info.longlost.stockoverflow.data.StockContract.LatestPriceEntry;
 
 
 /**
@@ -58,7 +59,7 @@ public class StockDBHelper extends SQLiteOpenHelper{
 
         db.execSQL(SQL_CREATE_STOCKS_VIEW);
 
-        final String SQL_CREATE_STOCK_PRICE_TABLE = "CREATE TABLE " + PriceEntry.TABLE_NAME + " (" +
+        final String SQL_CREATE_PRICE_TABLE = "CREATE TABLE " + PriceEntry.TABLE_NAME + " (" +
                 PriceEntry._ID + " INTEGER PRIMARY KEY," +
                 PriceEntry.COLUMN_STOCK_ID + " INTEGER NOT NULL," +
                 PriceEntry.COLUMN_DATE + " INTEGER NOT NULL," +
@@ -68,7 +69,21 @@ public class StockDBHelper extends SQLiteOpenHelper{
                 PriceEntry.COLUMN_CLOSE + " REAL NOT NULL," +
                 PriceEntry.COLUMN_VOLUME + " INTEGER NOT NULL);";
 
-        db.execSQL(SQL_CREATE_STOCK_PRICE_TABLE);
+        db.execSQL(SQL_CREATE_PRICE_TABLE);
+
+        final String SQL_CREATE_LATEST_PRICE_TABLE = "CREATE TABLE " +
+                LatestPriceEntry.TABLE_NAME + " (" +
+                LatestPriceEntry._ID + " INTEGER PRIMARY KEY," +
+                LatestPriceEntry.COLUMN_LAST_UPDATED + " INTEGER NOT NULL," +
+                LatestPriceEntry.COLUMN_STOCK_ID + " INTEGER NOT NULL," +
+                LatestPriceEntry.COLUMN_LAST_TRADE_PRICE + " REAL NOT NULL," +
+                LatestPriceEntry.COLUMN_DAY_HIGH + " REAL NOT NULL," +
+                LatestPriceEntry.COLUMN_DAY_LOW + " REAL NOT NULL," +
+                LatestPriceEntry.COLUMN_DAY_RANGE + " TEXT NOT NULL," +
+                LatestPriceEntry.COLUMN_VOLUME + " INTEGER NOT NULL," +
+                LatestPriceEntry.COLUMN_AVG_DAY_VOLUME + " INTEGER NOT NULL);";
+
+        db.execSQL(SQL_CREATE_LATEST_PRICE_TABLE);
 
         // Create static 'My Portfolio' Entry
         ContentValues values = new ContentValues();

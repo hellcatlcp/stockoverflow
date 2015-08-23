@@ -104,7 +104,7 @@ public class NavigationDrawerFragment extends Fragment implements
         super.onActivityCreated(savedInstanceState);
         // Indicate that this fragment would like to influence the set of actions in the action bar.
         setHasOptionsMenu(true);
-        getLoaderManager().initLoader(PORTFOLIO_LOADER, null, this);
+        getLoaderManager().initLoader(PORTFOLIO_LOADER, Bundle.EMPTY, this);
     }
 
     @Override
@@ -396,7 +396,7 @@ public class NavigationDrawerFragment extends Fragment implements
                         null,
                         null);
             case STOCK_MAP_LOADER:
-                if (args != null) {
+                if (!args.isEmpty()) {
                     long portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
 
                     return new CursorLoader(getActivity(),

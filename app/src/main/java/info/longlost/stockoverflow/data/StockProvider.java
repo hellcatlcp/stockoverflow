@@ -182,10 +182,11 @@ public class StockProvider extends ContentProvider {
                 break;
             }
             case PORTFOLIO_ID_STOCK_ID:
-                long _id = db.insert(PortfolioEntry.TABLE_NAME, null, values);
+                long _id = db.insert(PortfolioStockMap.TABLE_NAME, null, values);
                 if ( _id > 0 )
-                    returnUri = PortfolioEntry.buildPortfolioUri(values.getAsLong(
-                            PortfolioEntry._ID));
+                    returnUri = PortfolioStockMap.buildStockMapUri(
+                            values.getAsLong(PortfolioStockMap.COLUMN_PORTFOLIO_ID),
+                            values.getAsLong(PortfolioStockMap.COLUMN_STOCK_ID));
                 else
                     throw new SQLException("Failed to insert row into " + uri);
                 break;
