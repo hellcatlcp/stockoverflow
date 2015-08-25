@@ -117,6 +117,13 @@ public class NavigationDrawerFragment extends Fragment implements
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v, int portfolioPos, long portfolioId) {
                 setSelection(portfolioId, portfolioPos, -1, -1);
+                // TODO (helenparsons): Default behaviour is to collapse the clicked group if it is
+                // TODO (helenparsons)  open and expand it if it is closed.  Instead it should
+                // TODO (helenparsons)  always ensure that the clicked group is expanded and that
+                // TODO (helenparsons)  any other expanded group is collapsed (for this you should
+                // TODO (helenparsons)  also investigate AbsListView.CHOICE_MODE_SINGLE and
+                // TODO (helenparsons)  AbsListView.CHOICE_MODE_MULTIPLE to understand what the
+                // TODO (helenparsons)  default behaviour is).
                 // return false so that the ExpandableListView handles expanding / collapsing.
                 return false;
             }

@@ -13,8 +13,6 @@ public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         BaseFragment.OnActionBarListener {
 
-    public static final String ARG_TITLE = "title";
-
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
