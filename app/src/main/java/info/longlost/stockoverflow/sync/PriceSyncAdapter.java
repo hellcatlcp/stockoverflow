@@ -51,48 +51,21 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_INTERVAL = 60 * 5;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
 
-    private static final int STOCK_NOTIFICATION_ID = 1000;
-
-    public static final String ARG_TICKER = "arg_ticker";
-
-    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[] {
-            LatestPriceEntry.COLUMN_STOCK_ID,
-            LatestPriceEntry.COLUMN_LAST_TRADE_PRICE,
-            LatestPriceEntry.COLUMN_DAY_HIGH,
-            LatestPriceEntry.COLUMN_DAY_LOW,
-            LatestPriceEntry.COLUMN_CHANGE
-    };
-
-    // these indices must match the projection
-    private static final int INDEX_WEATHER_ID = 0;
-    private static final int INDEX_MAX_TEMP = 1;
-    private static final int INDEX_MIN_TEMP = 2;
-    private static final int INDEX_SHORT_DESC = 3;
-
     public PriceSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }
-
-    // TODO: perform sync currently accepts a list of stock tickers to update
-    // TODO  but if that set is less than all the currently tracked stocks it will
-    // TODO  delete the latest price for any that were not requested.
-    // TODO  It will also fail completely if any stocks fail.  If we implement more
-    // TODO  robust, per stock failure, it will cause their latest price to be deleted.
+    
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
                               ContentProviderClient provider, SyncResult syncResult) {
         Log.d(TAG, "Start price sync.");
 
+        Map<String, Long> tickerMap = getTickerMap();
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
-        String[] tickers = extras.getStringArray(ARG_TICKER);
-        if (tickers == null) {
-            return;
-        }
-
         try {
-            URL url = Contract.getQueryUrl(tickers);
+            URL url = Contract.getQueryUrl(tickerMap.keySet().toArray(new String[] {}));
 
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -121,7 +94,6 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
 
-            Map<String, Long> tickerMap = getTickerMap(tickers);
             Vector<ContentValues> cVVector = Contract.getPriceDataFromJson(
                     buffer.toString(), tickerMap);
             storePriceData(cVVector);
@@ -146,32 +118,15 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
         return;
     }
 
-    private Map<String, Long> getTickerMap(String[] tickers) {
+    private Map<String, Long> getTickerMap() {
         Map<String, Long> result = new HashMap<String, Long>();
 
-        if (tickers.length == 0) {
-            return result;
-        }
-
-        StringBuffer selection = new StringBuffer(tickers.length * 2)
-                .append(StockEntry.COLUMN_TICKER)
-                .append(" in (");
-
-        for (int i = 0; i < tickers.length;) {
-            selection.append("?");
-
-            if (++i < tickers.length) {
-                selection.append(",");
-            }
-        }
-
-        selection.append(")");
 
         Cursor tickerCursor = getContext().getContentResolver().query(
                 StockEntry.CONTENT_URI,
                 new String[] { StockEntry._ID, StockEntry.COLUMN_TICKER },
-                selection.toString(),
-                tickers,
+                null,
+                null,
                 null);
 
         int idIdx = tickerCursor.getColumnIndex(StockEntry._ID);
