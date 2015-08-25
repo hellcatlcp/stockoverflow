@@ -46,6 +46,14 @@ public class MainActivity extends ActionBarActivity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
 
+        // TODO (helenparsons): Add a member variable to this class which stores the most
+        // TODO (helenparsons)  recently selected portfolio.  We will use this to figure out which
+        // TODO (helenparsons)  portfolio to add a new stock to.
+        // TODO (helenparsons)  We don't need to update the portfolio when a stock is selected
+        // TODO (helenparsons)  because our UI won't allow you to select a stock without first
+        // TODO (helenparsons)  selecting the portfolio it is in.  If we ever change this assumption
+        // TODO (helenparsons)  in our UI we would need to change onStockSelected.
+
         fragmentManager.beginTransaction()
                 .replace(R.id.container, PortfolioFragment.newInstance(portfolioId))
                 .commit();
@@ -96,6 +104,19 @@ public class MainActivity extends ActionBarActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+
+        // TODO (helenparsons): We want to handle the 'Add Stock' menu item here.  This will look
+        // TODO (helenparsons)  something like:
+        // TODO (helenparsons)
+        // TODO (helenparsons)  switch (id) {
+        // TODO (helenparsons)      case R.id.add_stock:
+        // TODO (helenparsons)          // ... do stuff
+        // TODO (helenparsons)          break;
+        // TODO (helenparsons)  }
+        // TODO (helenparsons)
+        // TODO (helenparsons)  Rather than actually add the stock, to test that we hooked up the
+        // TODO (helenparsons)  menu item properly, we should use AlertDialog to display an alert
+        // TODO (helenparsons)  with the portfolio ID and just an OK button that does nothing.
 
         return super.onOptionsItemSelected(item);
     }
