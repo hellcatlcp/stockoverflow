@@ -54,7 +54,7 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
     public PriceSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }
-    
+
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
                               ContentProviderClient provider, SyncResult syncResult) {
@@ -67,7 +67,7 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             URL url = Contract.getQueryUrl(tickerMap.keySet().toArray(new String[] {}));
 
-            // Create the request to OpenWeatherMap, and open the connection
+            // Create the request to open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();

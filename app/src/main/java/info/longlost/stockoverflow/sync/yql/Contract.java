@@ -131,19 +131,19 @@ public class Contract {
                 dayRange = quoteJson.getString(YQL_DAY_RANGE);
                 volume = quoteJson.getLong(YQL_VOLUME);
 
-                ContentValues weatherValues = new ContentValues();
+                ContentValues stockValues = new ContentValues();
 
-                weatherValues.put(LatestPriceEntry.COLUMN_STOCK_ID, stockId);
-                weatherValues.put(LatestPriceEntry.COLUMN_LAST_UPDATED, created);
-                weatherValues.put(LatestPriceEntry.COLUMN_LAST_TRADE_PRICE, lastTrade);
-                weatherValues.put(LatestPriceEntry.COLUMN_CHANGE, change);
-                weatherValues.put(LatestPriceEntry.COLUMN_DAY_LOW, dayLow);
-                weatherValues.put(LatestPriceEntry.COLUMN_DAY_HIGH, dayHigh);
-                weatherValues.put(LatestPriceEntry.COLUMN_DAY_RANGE, dayRange);
-                weatherValues.put(LatestPriceEntry.COLUMN_VOLUME, volume);
-                weatherValues.put(LatestPriceEntry.COLUMN_AVG_DAY_VOLUME, avgDayVolume);
+                stockValues.put(LatestPriceEntry.COLUMN_STOCK_ID, stockId);
+                stockValues.put(LatestPriceEntry.COLUMN_LAST_UPDATED, created);
+                stockValues.put(LatestPriceEntry.COLUMN_LAST_TRADE_PRICE, lastTrade);
+                stockValues.put(LatestPriceEntry.COLUMN_CHANGE, change);
+                stockValues.put(LatestPriceEntry.COLUMN_DAY_LOW, dayLow);
+                stockValues.put(LatestPriceEntry.COLUMN_DAY_HIGH, dayHigh);
+                stockValues.put(LatestPriceEntry.COLUMN_DAY_RANGE, dayRange);
+                stockValues.put(LatestPriceEntry.COLUMN_VOLUME, volume);
+                stockValues.put(LatestPriceEntry.COLUMN_AVG_DAY_VOLUME, avgDayVolume);
 
-                cVVector.add(weatherValues);
+                cVVector.add(stockValues);
             } else {
                 Log.w(TAG, "Skipping unknown ticker: " + ticker);
             }
