@@ -38,6 +38,9 @@ public class MainActivity extends ActionBarActivity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
+    // TODO (helenparsons): Add an onStart() / onStop() pair to this activity which uses
+    // TODO (helenparsons)  PriceSyncAdapter.configurePeriodicSync() to start syncing every 5
+    // TODO (helenparsons)  minutes (in onStart) and cancels the sync in onStop.
     @Override
     public void onPortfolioSelected(long portfolioId) {
         // update the main content by replacing fragments

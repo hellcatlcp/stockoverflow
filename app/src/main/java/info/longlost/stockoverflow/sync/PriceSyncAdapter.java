@@ -282,6 +282,10 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
         return newAccount;
     }
 
+    // TODO (helenparsons): This configures the device to automatically start syncing in the
+    // TODO (helenparsons)  background every 5 hours after there is an appropriate account
+    // TODO (helenparsons)  on the device.  This should probably be removed since we don't want
+    // TODO (helenparsons)  to sync in the background at all.
     private static void onAccountCreated(Account newAccount, Context context) {
         /*
          * Since we've created an account
