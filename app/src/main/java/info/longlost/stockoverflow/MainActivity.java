@@ -1,5 +1,7 @@
 package info.longlost.stockoverflow;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.FragmentManager;
@@ -17,6 +19,7 @@ public class MainActivity extends ActionBarActivity
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
+    public long selectedPortfolioId;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -46,13 +49,14 @@ public class MainActivity extends ActionBarActivity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        // TODO (helenparsons): Add a member variable to this class which stores the most
-        // TODO (helenparsons)  recently selected portfolio.  We will use this to figure out which
+        // TODO  We will use this to figure out which
         // TODO (helenparsons)  portfolio to add a new stock to.
         // TODO (helenparsons)  We don't need to update the portfolio when a stock is selected
         // TODO (helenparsons)  because our UI won't allow you to select a stock without first
         // TODO (helenparsons)  selecting the portfolio it is in.  If we ever change this assumption
         // TODO (helenparsons)  in our UI we would need to change onStockSelected.
+
+        this.selectedPortfolioId = portfolioId;
 
         fragmentManager.beginTransaction()
                 .replace(R.id.container, PortfolioFragment.newInstance(portfolioId))
@@ -105,19 +109,21 @@ public class MainActivity extends ActionBarActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // TODO (helenparsons): We want to handle the 'Add Stock' menu item here.  This will look
-        // TODO (helenparsons)  something like:
-        // TODO (helenparsons)
-        // TODO (helenparsons)  switch (id) {
-        // TODO (helenparsons)      case R.id.add_stock:
-        // TODO (helenparsons)          // ... do stuff
-        // TODO (helenparsons)          break;
-        // TODO (helenparsons)  }
-        // TODO (helenparsons)
-        // TODO (helenparsons)  Rather than actually add the stock, to test that we hooked up the
-        // TODO (helenparsons)  menu item properly, we should use AlertDialog to display an alert
-        // TODO (helenparsons)  with the portfolio ID and just an OK button that does nothing.
+        switch (id) {
+            case R.id.add_stock:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(Long.toString(selectedPortfolioId))
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //do things
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
 
+        }
+            //
         return super.onOptionsItemSelected(item);
     }
 }

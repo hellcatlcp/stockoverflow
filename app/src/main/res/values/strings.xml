@@ -6,7 +6,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_example">Example action</string>
+    <string name="add_stock">Add Stock</string>
     <string name="title_stock">Stock:</string>
 
     <string name="sync_account_type">stockoverflow.longlost.info</string>
