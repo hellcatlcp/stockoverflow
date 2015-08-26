@@ -19,7 +19,7 @@ public class MainActivity extends ActionBarActivity
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
-    public long selectedPortfolioId;
+    private long mSelectedPortfolioId;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -49,14 +49,7 @@ public class MainActivity extends ActionBarActivity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        // TODO  We will use this to figure out which
-        // TODO (helenparsons)  portfolio to add a new stock to.
-        // TODO (helenparsons)  We don't need to update the portfolio when a stock is selected
-        // TODO (helenparsons)  because our UI won't allow you to select a stock without first
-        // TODO (helenparsons)  selecting the portfolio it is in.  If we ever change this assumption
-        // TODO (helenparsons)  in our UI we would need to change onStockSelected.
-
-        this.selectedPortfolioId = portfolioId;
+        mSelectedPortfolioId = portfolioId;
 
         fragmentManager.beginTransaction()
                 .replace(R.id.container, PortfolioFragment.newInstance(portfolioId))
@@ -112,7 +105,7 @@ public class MainActivity extends ActionBarActivity
         switch (id) {
             case R.id.add_stock:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(Long.toString(selectedPortfolioId))
+                builder.setMessage(Long.toString(mSelectedPortfolioId))
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
