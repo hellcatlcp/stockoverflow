@@ -41,6 +41,9 @@ import static java.util.SimpleTimeZone.*;
 /**
  * Created by ldenison on 20/08/2015.
  */
+// TODO (ldenison): Need to update the sync adapter to set the verify status of stock prices
+// TODO (ldenison)  and gracefully handle failures for individual stocks.  It should also only
+// TODO (ldenison)  delete old data for successfully updated stocks.
 public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static final String TAG = PriceSyncAdapter.class.getSimpleName();
@@ -117,9 +120,12 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
         return;
     }
 
+    // TODO (helenparsons): Move this to somewhere more general to make it usable from multiple
+    // TODO (helenparsons)  classes.  Suggest creating .data.StockHelper and making this public
+    // TODO (helenparsons)  static.  The function will no longer be able to call getContext() so
+    // TODO (helenparsons)  it should take a Context as an argument.
     private Map<String, Long> getTickerMap() {
         Map<String, Long> result = new HashMap<String, Long>();
-
 
         Cursor tickerCursor = getContext().getContentResolver().query(
                 StockEntry.CONTENT_URI,
@@ -142,7 +148,6 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
      * Store a cVVector of latest price data.
      */
     private void storePriceData(Vector<ContentValues> cVVector) {
-
         Date now = new Date();
         Calendar calendar = new GregorianCalendar(UTC);
         calendar.setTime(now);

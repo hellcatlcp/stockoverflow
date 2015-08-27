@@ -40,6 +40,7 @@ public class StockDBHelper extends SQLiteOpenHelper{
         final String SQL_CREATE_STOCKS_TABLE = "CREATE TABLE " + StockEntry.TABLE_NAME + " (" +
                 StockEntry._ID + " INTEGER PRIMARY KEY," +
                 StockEntry.COLUMN_TICKER + " TEXT UNIQUE NOT NULL);";
+        // TODO (helenparsons): Add a not null string status column to the stocks table.
 
         db.execSQL(SQL_CREATE_STOCKS_TABLE);
 
@@ -90,6 +91,7 @@ public class StockDBHelper extends SQLiteOpenHelper{
         values.put(PortfolioEntry.COLUMN_PORTFOLIO_NAME, "My Portfolio");
         long portfolio_id = db.insert(PortfolioEntry.TABLE_NAME, null, values);
 
+        // TODO (helenparsons): Add initial values for the status of dummy stocks
         // Create dummy GOOG data
         values.clear();
         values.put(StockEntry.COLUMN_TICKER, "GOOG");

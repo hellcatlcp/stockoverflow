@@ -17,6 +17,10 @@ public class StockContract {
     public static final String PRICE_LOCATION = "price";
     public static final String LATEST_LOCATION = "latest";
 
+    // TODO (helenparsons): Add constant strings to represent that a stock is either unverified,
+    // TODO (helenparsons)  verified or invalid called UNVERIFIED_VALUE, VERIFIED_VALUE and
+    // TODO (helenparsons)  INVALID_VALUE.
+
     //Create database table for a set of stocks
 
     public static final class StockEntry implements BaseColumns {
@@ -28,6 +32,8 @@ public class StockContract {
                 CONTENT_AUTHORITY + "/" + STOCKS_LOCATION;
         public static final String TABLE_NAME = "stocks";
         public static final String COLUMN_TICKER = "ticker";
+
+        // TODO (helenparsons): Add a status column to StockEntry.
 
 
         public static Uri buildStockUri(long stock_id) {

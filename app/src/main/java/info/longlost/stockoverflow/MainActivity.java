@@ -104,12 +104,44 @@ public class MainActivity extends ActionBarActivity
 
         switch (id) {
             case R.id.add_stock:
+                // TODO (helenparsons): This dialog should display a text box allowing the user
+                // TODO (helenparsons)  to enter the amount they have of a given stock and the
+                // TODO (helenparsons)  stock ticker symbol.  It should have an 'OK' button which
+                // TODO (helenparsons)  attempts to add the stock to the currently selected
+                // TODO (helenparsons)  portfolio and a 'Cancel' button which just closes the dialog
+                // TODO (helenparsons)  without doing anything.
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(Long.toString(mSelectedPortfolioId))
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                //do things
+                                // TODO (helenparsons): If the user clicked 'OK' we should do
+                                // TODO (helenparsons)  several things:
+                                // TODO (helenparsons)    1) Add the symbol to the stocks table
+                                // TODO (helenparsons)       using getContext().getContentResolver()
+                                // TODO (helenparsons)       .insert(StocksEntry.CONTENT_URI, ...)
+                                // TODO (helenparsons)       This should initialize the newly
+                                // TODO (helenparsons)       created status column (see other TODO)
+                                // TODO (helenparsons)       to StockContract.UNVERIFIED_VALUE
+                                // TODO (helenparsons)
+                                // TODO (helenparsons)    2) Start a PriceIntentService to go and
+                                // TODO (helenparsons)       fetch the latest price of the entered
+                                // TODO (helenparsons)       stock and enter it in the database.
+                                // TODO (helenparsons)       This verifies that the stock exists
+                                // TODO (helenparsons)       as far as Yahoo exists, so the
+                                // TODO (helenparsons)       IntentService can set the status of
+                                // TODO (helenparsons)       the stock appropriately.
+                                // TODO (helenparsons)       This is going to involve constructing
+                                // TODO (helenparsons)       an appropriate Intent object that
+                                // TODO (helenparsons)       explicitly starts a
+                                // TODO (helenparsons)       PriceIntentService.class and passes
+                                // TODO (helenparsons)       the ticker we want to get price data
+                                // TODO (helenparsons)       for as an Intent extra Bundle.
+                                // TODO (helenparsons)       We don't need to do anything when the
+                                // TODO (helenparsons)       IntentService finishes because due to
+                                // TODO (helenparsons)       the magic of ContentProviders our UI
+                                // TODO (helenparsons)       will be automatically notified of
+                                // TODO (helenparsons)       updates to the data.
                             }
                         });
                 AlertDialog alert = builder.create();
