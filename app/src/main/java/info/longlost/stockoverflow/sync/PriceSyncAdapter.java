@@ -41,9 +41,6 @@ import static java.util.SimpleTimeZone.*;
 /**
  * Created by ldenison on 20/08/2015.
  */
-// TODO (ldenison): Need to update the sync adapter to set the verify status of stock prices
-// TODO (ldenison)  and gracefully handle failures for individual stocks.  It should also only
-// TODO (ldenison)  delete old data for successfully updated stocks.
 public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static final String TAG = PriceSyncAdapter.class.getSimpleName();
@@ -160,10 +157,20 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
             cVVector.toArray(cvArray);
             getContext().getContentResolver().bulkInsert(LatestPriceEntry.CONTENT_URI, cvArray);
 
+            // TODO (helenparsons): Extract an array of stock IDs for the stocks we actually
+            // TODO (helenparsons)  updated from the cVVector (ie. if our stocks table contains
+            // TODO (helenparsons)  unverified ticker symbols that yahoo hasn't heard of, they will
+            // TODO (helenparsons)  be missing from the returned results).
+            // TODO (helenparsons)  Below we should restrict the delete to only those stocks we
+            // TODO (helenparsons)  updated.
             // delete old data so we don't build up an endless history
             getContext().getContentResolver().delete(LatestPriceEntry.CONTENT_URI,
                     LatestPriceEntry.COLUMN_LAST_UPDATED + " <= ?",
                     new String[] {Long.toString(calendar.getTimeInMillis())});
+
+            // TODO (helenparsons): Use the same array of updated stocks to set the status of all
+            // TODO (helenparsons)  updated stocks to StockContract.VERIFIED_VALUE - ie. in case
+            // TODO (helenparsons)  we didn't have network when we first added the stock.
         }
 
         Log.d(TAG, "Sync Complete. " + cVVector.size() + " Inserted");
