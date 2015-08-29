@@ -110,9 +110,14 @@ public class MainActivity extends ActionBarActivity
                 // TODO (helenparsons)  attempts to add the stock to the currently selected
                 // TODO (helenparsons)  portfolio and a 'Cancel' button which just closes the dialog
                 // TODO (helenparsons)  without doing anything.
+                // TODO: Use fragement dialog to create a custom alert dialog
+                // TODO: Set contnet area to include two edit text fields
+                // TODO:  use inflate view and a xml for the view to display properly
+                // TODO: set the view using builder.setView 
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(Long.toString(mSelectedPortfolioId))
-                        .setCancelable(false)
+                builder.setMessage("Add Stock to " + Long.toString(mSelectedPortfolioId))
+                        .setCancelable(true)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 // TODO (helenparsons): If the user clicked 'OK' we should do
