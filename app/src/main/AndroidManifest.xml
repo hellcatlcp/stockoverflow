@@ -46,7 +46,7 @@
 
         <!-- The SyncAdapter service -->
         <service
-            android:name=".sync.PriceSyncService"
+            android:name=".sync.LatestPriceSyncService"
             android:exported="true"
             >
             <intent-filter>
@@ -57,7 +57,7 @@
                 android:resource="@xml/syncadapter" />
         </service>
 
-        <!-- TODO (helenparsons): Need to declare PriceIntentService here.  It will look like the
+        <!-- TODO (helenparsons): Need to declare LatestPriceIntentService here.  It will look like the
              TODO (helenparsons)  service declaration above, but it doesn't need any metadata or
              TODO (helenparsons)  intent filters.  It should also be exported="false" since we
              TODO (helenparsons)  don't want it to be visible outside this app.

@@ -7,21 +7,21 @@ import android.os.IBinder;
 /**
  * Created by ldenison on 20/08/2015.
  */
-public class PriceSyncService extends Service {
+public class LatestPriceSyncService extends Service {
     private static final Object sSyncAdapterLock = new Object();
-    private static PriceSyncAdapter sPriceSyncAdapter = null;
+    private static LatestPriceSyncAdapter sLatestPriceSyncAdapter = null;
 
     @Override
     public void onCreate() {
         synchronized (sSyncAdapterLock) {
-            if (sPriceSyncAdapter == null) {
-                sPriceSyncAdapter = new PriceSyncAdapter(getApplicationContext(), true);
+            if (sLatestPriceSyncAdapter == null) {
+                sLatestPriceSyncAdapter = new LatestPriceSyncAdapter(getApplicationContext(), true);
             }
         }
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return sPriceSyncAdapter.getSyncAdapterBinder();
+        return sLatestPriceSyncAdapter.getSyncAdapterBinder();
     }
 }
