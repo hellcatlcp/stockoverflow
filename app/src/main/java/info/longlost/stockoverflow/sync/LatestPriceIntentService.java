@@ -6,14 +6,14 @@ import android.content.Intent;
 /**
  * Created by ldenison on 26/08/2015.
  */
-public class PriceIntentService extends IntentService {
+public class LatestPriceIntentService extends IntentService {
 
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      *
      * @param name Used to name the worker thread, important only for debugging.
      */
-    public PriceIntentService(String name) {
+    public LatestPriceIntentService(String name) {
         super(name);
     }
 
@@ -30,7 +30,7 @@ public class PriceIntentService extends IntentService {
         // TODO (helenparsons)  create the url that we need to query to get the price data for our
         // TODO (helenparsons)  ticker.
 
-        // TODO (helenparsons): Copy code from PriceSyncAdapter.onPerformSync to query the url and
+        // TODO (helenparsons): Copy code from LatestPriceSyncAdapter.onPerformSync to query the url and
         // TODO (helenparsons)  read the resulting data into a buffer.
 
         // TODO (helenparsons): Use .sync.yql.Contract.getPriceDataFromJson to convert the json to

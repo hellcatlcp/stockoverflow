@@ -42,7 +42,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     // TODO (helenparsons): Add an onStart() / onStop() pair to this activity which uses
-    // TODO (helenparsons)  PriceSyncAdapter.configurePeriodicSync() to start syncing every 5
+    // TODO (helenparsons)  LatestPriceSyncAdapter.configurePeriodicSync() to start syncing every 5
     // TODO (helenparsons)  minutes (in onStart) and cancels the sync in onStop.
     @Override
     public void onPortfolioSelected(long portfolioId) {
@@ -129,7 +129,7 @@ public class MainActivity extends ActionBarActivity
                                 // TODO (helenparsons)       created status column (see other TODO)
                                 // TODO (helenparsons)       to StockContract.UNVERIFIED_VALUE
                                 // TODO (helenparsons)
-                                // TODO (helenparsons)    2) Start a PriceIntentService to go and
+                                // TODO (helenparsons)    2) Start a LatestPriceIntentService to go and
                                 // TODO (helenparsons)       fetch the latest price of the entered
                                 // TODO (helenparsons)       stock and enter it in the database.
                                 // TODO (helenparsons)       This verifies that the stock exists
@@ -139,7 +139,7 @@ public class MainActivity extends ActionBarActivity
                                 // TODO (helenparsons)       This is going to involve constructing
                                 // TODO (helenparsons)       an appropriate Intent object that
                                 // TODO (helenparsons)       explicitly starts a
-                                // TODO (helenparsons)       PriceIntentService.class and passes
+                                // TODO (helenparsons)       LatestPriceIntentService.class and passes
                                 // TODO (helenparsons)       the ticker we want to get price data
                                 // TODO (helenparsons)       for as an Intent extra Bundle.
                                 // TODO (helenparsons)       We don't need to do anything when the

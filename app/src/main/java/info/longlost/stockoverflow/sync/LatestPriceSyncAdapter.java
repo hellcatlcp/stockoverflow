@@ -41,16 +41,16 @@ import static java.util.SimpleTimeZone.*;
 /**
  * Created by ldenison on 20/08/2015.
  */
-public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
+public class LatestPriceSyncAdapter extends AbstractThreadedSyncAdapter {
 
-    public static final String TAG = PriceSyncAdapter.class.getSimpleName();
+    public static final String TAG = LatestPriceSyncAdapter.class.getSimpleName();
     public static final SimpleTimeZone UTC = new SimpleTimeZone(UTC_TIME, "UTC");
 
     // Interval at which to sync with the prices, in seconds.
     public static final int SYNC_INTERVAL = 60 * 5;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
 
-    public PriceSyncAdapter(Context context, boolean autoInitialize) {
+    public LatestPriceSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }
 
@@ -256,7 +256,7 @@ public class PriceSyncAdapter extends AbstractThreadedSyncAdapter {
         /*
          * Since we've created an account
          */
-        PriceSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, SYNC_FLEXTIME);
+        LatestPriceSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, SYNC_FLEXTIME);
 
         /*
          * Without calling setSyncAutomatically, our periodic sync will not be enabled.
