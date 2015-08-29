@@ -2,6 +2,7 @@ package info.longlost.stockoverflow;
 
 import android.app.Activity;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -9,7 +10,6 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
@@ -80,23 +80,21 @@ public class PortfolioFragment extends BaseFragment implements
         // Create a formatter to use for drawing a series using LineAndPointRenderer
         // and configure it from xml:
         LineAndPointFormatter series1Format = new LineAndPointFormatter();
-        series1Format.setPointLabelFormatter(new PointLabelFormatter());
         series1Format.configure(getActivity(),
-                R.xml.line_point_formatter_with_plf1);
+                R.xml.line_point_formatter);
+        series1Format.setPointLabeler(null);
 
         // add a new series' to the xyplot:
         plot.addSeries(series1, series1Format);
 
         // same as above:
         LineAndPointFormatter series2Format = new LineAndPointFormatter();
-        series2Format.setPointLabelFormatter(new PointLabelFormatter());
         series2Format.configure(getActivity(),
-                R.xml.line_point_formatter_with_plf2);
+                R.xml.line_point_formatter);
         plot.addSeries(series2, series2Format);
 
         // reduce the number of range labels
         plot.setTicksPerRangeLabel(3);
-        plot.getGraphWidget().setDomainLabelOrientation(-45);
 
         return rootView;
     }
