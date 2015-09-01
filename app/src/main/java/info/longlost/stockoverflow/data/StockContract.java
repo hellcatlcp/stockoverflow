@@ -16,6 +16,7 @@ public class StockContract {
     public static final String PORTFOLIOS_LOCATION =  "portfolio";
     public static final String PRICE_LOCATION = "price";
     public static final String LATEST_LOCATION = "latest";
+    public static final String CACHE_LOCATION = "cache";
 
     // TODO (helenparsons): Add constant strings to represent that a stock is either unverified,
     // TODO (helenparsons)  verified or invalid called UNVERIFIED_VALUE, VERIFIED_VALUE and
@@ -83,7 +84,12 @@ public class StockContract {
         public static final String COLUMN_STOCK_ID = "stock_id";
         public static final String COLUMN_STOCK_AMOUNT = "stock_amount";
 
-        public static Uri buildStockMapUri(Long portfolioId, Long stockId) {
+        public static Uri buildPortfolioStockUri(Long portfolioId) {
+            return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
+                    .buildUpon().appendPath(STOCKS_LOCATION).build();
+        }
+
+        public static Uri buildStockUri(Long portfolioId, Long stockId) {
             return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
                     .buildUpon().appendPath(STOCKS_LOCATION)
                     .appendPath(stockId.toString()).build();
@@ -92,7 +98,8 @@ public class StockContract {
 
     public static final class PriceEntry implements BaseColumns {
 
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PRICE_LOCATION).build();
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
+                .appendPath(PRICE_LOCATION).build();
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
                 CONTENT_AUTHORITY + "/" + PRICE_LOCATION;
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
@@ -106,6 +113,26 @@ public class StockContract {
         public static final String COLUMN_CLOSE = "close";
         public static final String COLUMN_VOLUME = "volume";
 
+        // Cache table stores cached date ranges
+        public static final String CACHE_CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PRICE_LOCATION + "/" + CACHE_LOCATION;
+        public static final String CACHE_CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE +
+                "/" + CONTENT_AUTHORITY + "/" + PRICE_LOCATION + "/" + CACHE_LOCATION;
+        public static final String CACHE_TABLE_NAME = "prices_cache";
+        public static final String COLUMN_START = "start_date";
+        public static final String COLUMN_END = "end_date";
+
+        public static String getStockId(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+
+        public static String getFromDate(Uri uri) {
+            return uri.getPathSegments().get(3);
+        }
+
+        public static String getToDate(Uri uri) {
+            return uri.getPathSegments().get(5);
+        }
     }
 
     public static final class LatestPriceEntry implements BaseColumns {

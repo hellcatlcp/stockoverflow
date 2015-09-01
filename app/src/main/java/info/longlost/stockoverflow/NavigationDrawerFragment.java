@@ -407,15 +407,15 @@ public class NavigationDrawerFragment extends Fragment implements
                     long portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
 
                     return new CursorLoader(getActivity(),
-                            PortfolioStockMap.CONTENT_URI,
+                            PortfolioStockMap.buildPortfolioStockUri(portfolioId),
                             new String[] {
                                     PortfolioStockMap._ID,
                                     PortfolioStockMap.COLUMN_PORTFOLIO_ID,
                                     PortfolioStockMap.COLUMN_STOCK_ID,
                                     StockEntry.COLUMN_TICKER
                             },
-                            PortfolioStockMap.COLUMN_PORTFOLIO_ID + "=?",
-                            new String[] { Long.toString(portfolioId) },
+                            null,
+                            null,
                             null);
                 }
         }

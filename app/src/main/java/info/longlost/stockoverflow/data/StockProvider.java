@@ -11,14 +11,16 @@ import android.support.annotation.NonNull;
 
 import info.longlost.stockoverflow.util.SelectionBuilder;
 
+import info.longlost.stockoverflow.data.StockContract.StockEntry;
+import info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
+import info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
+import info.longlost.stockoverflow.data.StockContract.PriceEntry;
+import info.longlost.stockoverflow.data.StockContract.LatestPriceEntry;
 import static info.longlost.stockoverflow.data.StockContract.LATEST_LOCATION;
-import static info.longlost.stockoverflow.data.StockContract.StockEntry;
-import static info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
-import static info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
-import static info.longlost.stockoverflow.data.StockContract.PriceEntry;
 import static info.longlost.stockoverflow.data.StockContract.STOCKS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PORTFOLIOS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PRICE_LOCATION;
+import static info.longlost.stockoverflow.data.StockContract.CACHE_LOCATION;
 
 /**
  * Created by ldenison on 02/08/2015.
@@ -40,6 +42,8 @@ public class StockProvider extends ContentProvider {
     static final int PORTFOLIO_ID_STOCK_ID = 204;
 
     static final int PRICE = 300;
+    static final int PRICE_FROM_TO = 301;
+    static final int PRICE_FROM_TO_CACHE = 302;
 
     @Override
     public boolean onCreate() {
@@ -64,6 +68,9 @@ public class StockProvider extends ContentProvider {
                 PORTFOLIO_ID_STOCK_ID);
 
         matcher.addURI(authority, PRICE_LOCATION, PRICE);
+        matcher.addURI(authority, PRICE_LOCATION + "/*/from/*/to/*", PRICE_FROM_TO);
+        matcher.addURI(authority, PRICE_LOCATION + "/*/from/*/to/*/" + CACHE_LOCATION,
+                PRICE_FROM_TO_CACHE);
 
         return matcher;
     }
@@ -90,6 +97,10 @@ public class StockProvider extends ContentProvider {
                 return PortfolioStockMap.CONTENT_ITEM_TYPE;
             case PRICE:
                 return PriceEntry.CONTENT_TYPE;
+            case PRICE_FROM_TO:
+                return PriceEntry.CONTENT_TYPE;
+            case PRICE_FROM_TO_CACHE:
+                return PriceEntry.CACHE_CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -98,60 +109,84 @@ public class StockProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
+        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         Cursor retCursor;
-        String tableName;
-        SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
 
         switch (sUriMatcher.match(uri)) {
             // "/stock"
             case STOCK: {
-                tableName = StockEntry.TABLE_NAME;
+                retCursor = db.query(StockEntry.TABLE_NAME, projection, selection,
+                        selectionArgs, null, null, sortOrder);
                 break;
             }
             // "/stock/*"
             case STOCK_ID: {
-                tableName = StockEntry.TABLE_NAME;
-                builder.add(StockEntry._ID + "=?",
-                        new String[] { StockEntry.getStockId(uri) });
+                SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
+                builder.add(StockEntry._ID + "=?", new String[] { StockEntry.getStockId(uri) });
+
+                retCursor = db.query(StockEntry.TABLE_NAME, projection, builder.build(),
+                        builder.getSelectionArgs(), null, null, sortOrder);
                 break;
             }
             // "/portfolio"
             case PORTFOLIO: {
-                tableName = PortfolioEntry.TABLE_NAME;
+                retCursor = db.query(PortfolioEntry.TABLE_NAME, projection, selection,
+                        selectionArgs, null, null, sortOrder);
                 break;
             }
             // "/portfolio/*"
             case PORTFOLIO_ID: {
-                tableName = PortfolioEntry.TABLE_NAME;
+                SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
                 builder.add(PortfolioEntry._ID + "=?",
                         new String[] { PortfolioEntry.getPortfolioId(uri) });
+
+                retCursor = db.query(PortfolioEntry.TABLE_NAME, projection, builder.build(),
+                        builder.getSelectionArgs(), null, null, sortOrder);
                 break;
             }
             // "/portfolio-stock"
             case PORTFOLIO_STOCK: {
-                tableName = PortfolioStockMap.STOCKS_VIEW;
+                retCursor = db.query(PortfolioStockMap.STOCKS_VIEW, projection, selection,
+                        selectionArgs, null, null, sortOrder);
                 break;
             }
             // "/portfolio/*/stock"
             case PORTFOLIO_ID_STOCK: {
-                tableName = PortfolioStockMap.STOCKS_VIEW;
+                SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
                 builder.add(PortfolioEntry._ID + "=?",
                         new String[] { PortfolioEntry.getPortfolioId(uri) });
+
+                retCursor = db.query(PortfolioStockMap.STOCKS_VIEW, projection, builder.build(),
+                        builder.getSelectionArgs(), null, null, sortOrder);
+                break;
+            }
+            // "/price/*/from/*/to/*"
+            case PRICE_FROM_TO: {
+                SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
+                builder.add(PriceEntry.COLUMN_STOCK_ID + "=?",
+                        new String[] { PriceEntry.getStockId(uri) })
+                    .add(PriceEntry.COLUMN_DATE + ">=? AND " + PriceEntry.COLUMN_DATE + "<=?",
+                        new String[] { PriceEntry.getFromDate(uri), PriceEntry.getToDate(uri) });
+
+                retCursor = db.query(PriceEntry.TABLE_NAME, projection, builder.build(),
+                        builder.getSelectionArgs(), null, null, sortOrder);
+                break;
+            }
+            // "/price/*/from/*/to/*/cache"
+            case PRICE_FROM_TO_CACHE: {
+                SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
+                builder.add(PriceEntry.COLUMN_STOCK_ID + "=?",
+                        new String[] { PriceEntry.getStockId(uri) })
+                        .add(PriceEntry.COLUMN_START + "<=? AND " + PriceEntry.COLUMN_END + ">=?",
+                                new String[]{PriceEntry.getFromDate(uri), PriceEntry.getToDate(uri)});
+
+                retCursor = db.query(PriceEntry.CACHE_TABLE_NAME, projection, builder.build(),
+                        builder.getSelectionArgs(), null, null, sortOrder);
                 break;
             }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
-
-        retCursor = mOpenHelper.getReadableDatabase().query(
-                tableName,
-                projection,
-                builder.build(),
-                builder.getSelectionArgs(),
-                null,
-                null,
-                sortOrder
-        );
 
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
         return retCursor;
@@ -159,42 +194,39 @@ public class StockProvider extends ContentProvider {
 
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         Uri returnUri;
 
         switch (match) {
             case STOCK: {
-                long _id = db.insert(StockEntry.TABLE_NAME, null, values);
-                if ( _id > 0 )
-                    returnUri = StockEntry.buildStockUri(values.getAsLong(StockEntry._ID));
-                else
-                    throw new SQLException("Failed to insert row into " + uri);
+                long id = simpleInsert(StockEntry.TABLE_NAME, values);
+                returnUri = StockEntry.buildStockUri(id);
                 break;
             }
             case PORTFOLIO: {
-                long _id = db.insert(PortfolioEntry.TABLE_NAME, null, values);
-                if ( _id > 0 )
-                    returnUri = PortfolioEntry.buildPortfolioUri(values.getAsLong(
-                        PortfolioEntry._ID));
-                else
-                    throw new SQLException("Failed to insert row into " + uri);
+                long id = simpleInsert(PortfolioEntry.TABLE_NAME, values);
+                returnUri = PortfolioEntry.buildPortfolioUri(id);
                 break;
             }
             case PORTFOLIO_ID_STOCK_ID:
-                long _id = db.insert(PortfolioStockMap.TABLE_NAME, null, values);
-                if ( _id > 0 )
-                    returnUri = PortfolioStockMap.buildStockMapUri(
-                            values.getAsLong(PortfolioStockMap.COLUMN_PORTFOLIO_ID),
-                            values.getAsLong(PortfolioStockMap.COLUMN_STOCK_ID));
-                else
-                    throw new SQLException("Failed to insert row into " + uri);
+                simpleInsert(PortfolioStockMap.TABLE_NAME, values);
+                returnUri = PortfolioStockMap.buildStockUri(
+                        values.getAsLong(PortfolioStockMap.COLUMN_PORTFOLIO_ID),
+                        values.getAsLong(PortfolioStockMap.COLUMN_STOCK_ID));
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return returnUri;
+    }
+
+    private long simpleInsert(String tableName, ContentValues values) {
+        long id = mOpenHelper.getWritableDatabase().insert(tableName, null, values);
+        if (id > 0)
+            return id;
+        else
+            throw new SQLException("Failed to insert row into " + tableName);
     }
 
     @Override
@@ -213,6 +245,9 @@ public class StockProvider extends ContentProvider {
             case PORTFOLIO:
                 rowsDeleted = db.delete(PortfolioEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+            case STOCK_ID_PRICE_LATEST:
+                rowsDeleted = db.delete(LatestPriceEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -224,6 +259,7 @@ public class StockProvider extends ContentProvider {
 
         return rowsDeleted;
     }
+
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
@@ -253,40 +289,61 @@ public class StockProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
-        int returnCount = 0;
+        int count = 0;
+
         switch (match) {
             case STOCK:
                 db.beginTransaction();
                 try {
-                    for (ContentValues value : values) {
-                        long _id = db.insert(StockEntry.TABLE_NAME, null, value);
-                        if (_id != -1) {
-                            returnCount++;
-                        }
-                    }
+                    count = simpleBulkInsert(db, StockEntry.TABLE_NAME, values);
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();
                 }
-                getContext().getContentResolver().notifyChange(uri, null);
-                return returnCount;
+                break;
             case PORTFOLIO:
                 db.beginTransaction();
                 try {
-                    for (ContentValues value : values) {
-                        long _id = db.insert(PortfolioEntry.TABLE_NAME, null, value);
-                        if (_id != -1) {
-                            returnCount++;
-                        }
-                    }
+                    count = simpleBulkInsert(db, PortfolioEntry.TABLE_NAME, values);
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();
                 }
-                getContext().getContentResolver().notifyChange(uri, null);
-                return returnCount;
+                break;
+            case PRICE_FROM_TO: {
+                db.beginTransaction();
+                try {
+                    count = simpleBulkInsert(db, PriceEntry.TABLE_NAME, values);
+
+                    ContentValues cacheValues = new ContentValues();
+                    cacheValues.put(PriceEntry.COLUMN_STOCK_ID, PriceEntry.getStockId(uri));
+                    cacheValues.put(PriceEntry.COLUMN_START, PriceEntry.getFromDate(uri));
+                    cacheValues.put(PriceEntry.COLUMN_END, PriceEntry.getToDate(uri));
+                    db.insert(PriceEntry.CACHE_TABLE_NAME, null, cacheValues);
+                } finally {
+                    db.endTransaction();
+                }
+                break;
+            }
             default:
                 return super.bulkInsert(uri, values);
         }
+
+        if (count > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return count;
+    }
+
+    private int simpleBulkInsert(SQLiteDatabase db, String tableName, ContentValues[] values) {
+        int count = 0;
+        for (ContentValues value : values) {
+            long _id = db.insert(PortfolioEntry.TABLE_NAME, null, value);
+            if (_id != -1) {
+                count++;
+            }
+        }
+        return count;
     }
 }

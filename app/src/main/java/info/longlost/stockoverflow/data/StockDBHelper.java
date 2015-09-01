@@ -72,6 +72,15 @@ public class StockDBHelper extends SQLiteOpenHelper{
 
         db.execSQL(SQL_CREATE_PRICE_TABLE);
 
+        final String SQL_CREATE_PRICE_CACHE_TABLE = "CREATE TABLE " + PriceEntry.CACHE_TABLE_NAME +
+                " (" +
+                PriceEntry._ID + " INTEGER PRIMARY KEY," +
+                PriceEntry.COLUMN_STOCK_ID + " INTEGER NOT NULL," +
+                PriceEntry.COLUMN_START + " INTEGER NOT NULL," +
+                PriceEntry.COLUMN_END + " INTEGER NOT NULL);";
+
+        db.execSQL(SQL_CREATE_PRICE_CACHE_TABLE);
+
         final String SQL_CREATE_LATEST_PRICE_TABLE = "CREATE TABLE " +
                 LatestPriceEntry.TABLE_NAME + " (" +
                 LatestPriceEntry._ID + " INTEGER PRIMARY KEY," +
