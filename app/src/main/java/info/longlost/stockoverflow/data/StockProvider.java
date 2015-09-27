@@ -32,16 +32,15 @@ public class StockProvider extends ContentProvider {
 
     static final int STOCK = 100;
     static final int STOCK_ID = 101;
-    static final int STOCK_ID_LATEST_PRICE = 102;
-    static final int STOCK_ID_PRICE_FROM_TO = 103;
-    static final int STOCK_ID_PRICE_FROM_TO_CACHE = 104;
+    static final int STOCK_LATEST_PRICE = 102;
+    static final int STOCK_ID_LATEST_PRICE = 103;
+    static final int STOCK_ID_PRICE_FROM_TO = 104;
 
     static final int PORTFOLIO = 200;
     static final int PORTFOLIO_ID = 201;
     static final int PORTFOLIO_ID_STOCK_LATEST_PRICE = 202;
     static final int PORTFOLIO_ID_STOCK_ID = 203;
     static final int PORTFOLIO_ID_PRICE_FROM_TO = 204;
-    static final int PORTFOLIO_ID_PRICE_FROM_TO_CACHE = 205;
 
 
     @Override
@@ -56,6 +55,7 @@ public class StockProvider extends ContentProvider {
 
         matcher.addURI(authority, STOCKS_LOCATION, STOCK);
         matcher.addURI(authority, STOCKS_LOCATION + "/*", STOCK_ID);
+        matcher.addURI(authority, STOCKS_LOCATION + "/" + LATEST_LOCATION, STOCK_LATEST_PRICE);
         matcher.addURI(authority, STOCKS_LOCATION + "/*/" + LATEST_LOCATION, STOCK_ID_LATEST_PRICE);
         matcher.addURI(authority, STOCKS_LOCATION + "/*/" + PRICE_LOCATION + "/from/*/to/*",
                 STOCK_ID_PRICE_FROM_TO);
@@ -82,6 +82,8 @@ public class StockProvider extends ContentProvider {
                 return StockEntry.CONTENT_TYPE;
             case STOCK_ID:
                 return StockEntry.CONTENT_ITEM_TYPE;
+            case STOCK_LATEST_PRICE:
+                return LatestPriceEntry.CONTENT_ITEM_TYPE;
             case STOCK_ID_LATEST_PRICE:
                 return LatestPriceEntry.CONTENT_ITEM_TYPE;
             case PORTFOLIO:
@@ -236,6 +238,9 @@ public class StockProvider extends ContentProvider {
             case PORTFOLIO:
                 rowsDeleted = db.delete(PortfolioEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+            case STOCK_LATEST_PRICE:
+                rowsDeleted = db.delete(LatestPriceEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             case STOCK_ID_LATEST_PRICE:
                 rowsDeleted = db.delete(LatestPriceEntry.TABLE_NAME, selection, selectionArgs);
                 break;
@@ -301,7 +306,16 @@ public class StockProvider extends ContentProvider {
                     db.endTransaction();
                 }
                 break;
-            case STOCK_ID_PRICE_FROM_TO: {
+            case STOCK_LATEST_PRICE:
+                db.beginTransaction();
+                try {
+                    count = simpleBulkInsert(db, LatestPriceEntry.TABLE_NAME, values);
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                break;
+            case STOCK_ID_PRICE_FROM_TO:
                 db.beginTransaction();
                 try {
                     count = simpleBulkInsert(db, PriceEntry.TABLE_NAME, values);
@@ -310,7 +324,6 @@ public class StockProvider extends ContentProvider {
                     db.endTransaction();
                 }
                 break;
-            }
             default:
                 return super.bulkInsert(uri, values);
         }

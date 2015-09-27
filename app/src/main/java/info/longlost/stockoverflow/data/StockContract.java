@@ -102,6 +102,8 @@ public class StockContract {
 
     public static final class LatestPriceEntry implements BaseColumns {
 
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
+                .appendPath(STOCKS_LOCATION).appendPath(LATEST_LOCATION).build();
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
                 CONTENT_AUTHORITY + "/" + PRICE_LOCATION + "/" + LATEST_LOCATION;
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
