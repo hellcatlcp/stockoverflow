@@ -16,6 +16,8 @@ public class StockContract {
     public static final String PORTFOLIOS_LOCATION =  "portfolio";
     public static final String PRICE_LOCATION = "price";
     public static final String LATEST_LOCATION = "latest";
+    public static final String FROM_LOCATION = "from";
+    public static final String TO_LOCATION = "to";
     public static final String CACHE_LOCATION = "cache";
 
     // TODO (helenparsons): Add constant strings to represent that a stock is either unverified,
@@ -69,41 +71,12 @@ public class StockContract {
         }
     }
 
-    public static final class PortfolioStockMap implements BaseColumns {
-
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
-                .appendPath(PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION).build();
-        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
-                CONTENT_AUTHORITY + "/" + PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION;
-        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
-                CONTENT_AUTHORITY + "/" + PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION;
-
-        public static final String TABLE_NAME = "portfolio_map";
-        public static final String STOCKS_VIEW = "stocks_view";
-        public static final String COLUMN_PORTFOLIO_ID = "portfolio_id";
-        public static final String COLUMN_STOCK_ID = "stock_id";
-        public static final String COLUMN_STOCK_AMOUNT = "stock_amount";
-
-        public static Uri buildPortfolioStockUri(Long portfolioId) {
-            return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
-                    .buildUpon().appendPath(STOCKS_LOCATION).build();
-        }
-
-        public static Uri buildStockUri(Long portfolioId, Long stockId) {
-            return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
-                    .buildUpon().appendPath(STOCKS_LOCATION)
-                    .appendPath(stockId.toString()).build();
-        }
-    }
-
     public static final class PriceEntry implements BaseColumns {
 
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
-                .appendPath(PRICE_LOCATION).build();
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
-                CONTENT_AUTHORITY + "/" + PRICE_LOCATION;
+                CONTENT_AUTHORITY + "/" + STOCKS_LOCATION + "/" + PRICE_LOCATION;
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
-                CONTENT_AUTHORITY + "/" + PRICE_LOCATION;
+                CONTENT_AUTHORITY + "/" + STOCKS_LOCATION + "/" + PRICE_LOCATION;
         public static final String TABLE_NAME = "prices";
         public static final String COLUMN_STOCK_ID = "stock_id";
         public static final String COLUMN_DATE = "price_date";
@@ -115,30 +88,32 @@ public class StockContract {
 
         // Cache table stores cached date ranges
         public static final String CACHE_CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
-                CONTENT_AUTHORITY + "/" + PRICE_LOCATION + "/" + CACHE_LOCATION;
+                CONTENT_AUTHORITY + "/" + STOCKS_LOCATION + "/" + PRICE_LOCATION + "/" +
+                CACHE_LOCATION;
         public static final String CACHE_CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE +
-                "/" + CONTENT_AUTHORITY + "/" + PRICE_LOCATION + "/" + CACHE_LOCATION;
+                "/" + CONTENT_AUTHORITY + "/" + STOCKS_LOCATION + "/" + PRICE_LOCATION + "/" +
+                CACHE_LOCATION;
         public static final String CACHE_TABLE_NAME = "prices_cache";
         public static final String COLUMN_START = "start_date";
         public static final String COLUMN_END = "end_date";
 
-        public static String getStockId(Uri uri) {
+        // /stock/*/price/[from/*/to/*[/cache]]
+
+        public static String getStockPriceId(Uri uri) {
             return uri.getPathSegments().get(1);
         }
 
-        public static String getFromDate(Uri uri) {
-            return uri.getPathSegments().get(3);
+        public static String getStockPriceFromDate(Uri uri) {
+            return uri.getPathSegments().get(4);
         }
 
-        public static String getToDate(Uri uri) {
-            return uri.getPathSegments().get(5);
+        public static String getStockPriceToDate(Uri uri) {
+            return uri.getPathSegments().get(6);
         }
     }
 
     public static final class LatestPriceEntry implements BaseColumns {
 
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
-                .appendPath(PRICE_LOCATION).appendPath(LATEST_LOCATION).build();
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
                 CONTENT_AUTHORITY + "/" + PRICE_LOCATION + "/" + LATEST_LOCATION;
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
@@ -154,13 +129,61 @@ public class StockContract {
         public static final String COLUMN_VOLUME = "volume";
         public static final String COLUMN_AVG_DAY_VOLUME = "avg_day_volume";
 
-        public static Uri buildLatestPriceUri(long stock_id) {
+        public static Uri buildStockLatestPriceUri(long stock_id) {
             return ContentUris.withAppendedId(StockEntry.CONTENT_URI, stock_id).buildUpon()
-                    .appendPath(PRICE_LOCATION).appendPath(LATEST_LOCATION).build();
+                    .appendPath(LATEST_LOCATION).build();
         }
 
-        public static String getLatestPriceStockId(Uri uri) {
+        public static String getStockLatestPriceId(Uri uri) {
             return uri.getPathSegments().get(1);
+        }
+
+    }
+
+    public static final class PortfolioStockMap implements BaseColumns {
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION;
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PORTFOLIOS_LOCATION + "-" + STOCKS_LOCATION;
+
+        public static final String TABLE_NAME = "portfolio_map";
+        public static final String PORTFOLIO_LATEST_PRICE_VIEW = "portfolio_latest_price_view";
+        public static final String PORTFOLIO_PRICE_VIEW = "portfolio_price_view";
+        public static final String PORTFOLIO_PRICE_CACHE_VIEW = "portfolio_price_cache_view";
+        public static final String COLUMN_PORTFOLIO_ID = "portfolio_id";
+        public static final String COLUMN_STOCK_ID = "stock_id";
+        public static final String COLUMN_STOCK_AMOUNT = "stock_amount";
+
+        public static Uri buildPortfolioIdStockLatestPriceUri(Long portfolioId) {
+            return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
+                    .buildUpon().appendPath(STOCKS_LOCATION).appendPath(LATEST_LOCATION).build();
+        }
+
+        public static Uri buildPortfolioIdStockIdUri(Long portfolioId, Long stockId) {
+            return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
+                    .buildUpon().appendPath(STOCKS_LOCATION)
+                    .appendPath(stockId.toString()).build();
+        }
+
+        // /portfolio/*/price/[from/*/to/*[/cache]]
+        public static Uri buildPortfolioIdPriceFromToUri(Long portfolioId, Long from, Long to) {
+            return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
+                    .buildUpon().appendPath(PRICE_LOCATION).appendPath(FROM_LOCATION)
+                    .appendPath(from.toString()).appendPath(TO_LOCATION)
+                    .appendPath(to.toString()).build();
+        }
+
+        public static String getPortfolioPriceId(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+
+        public static String getPortfolioPriceFromDate(Uri uri) {
+            return uri.getPathSegments().get(4);
+        }
+
+        public static String getPortfolioPriceToDate(Uri uri) {
+            return uri.getPathSegments().get(6);
         }
     }
 }

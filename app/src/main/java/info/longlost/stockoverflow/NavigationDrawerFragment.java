@@ -407,7 +407,7 @@ public class NavigationDrawerFragment extends Fragment implements
                     long portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
 
                     return new CursorLoader(getActivity(),
-                            PortfolioStockMap.buildPortfolioStockUri(portfolioId),
+                            PortfolioStockMap.buildPortfolioIdStockLatestPriceUri(portfolioId),
                             new String[] {
                                     PortfolioStockMap._ID,
                                     PortfolioStockMap.COLUMN_PORTFOLIO_ID,

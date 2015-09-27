@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
 import info.longlost.stockoverflow.data.StockContract.StockEntry;
-import info.longlost.stockoverflow.data.StockContract.PriceEntry;
 import info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
 
 /**
@@ -36,6 +35,8 @@ public class PortfolioFragment extends BaseFragment implements
     private static final int STOCK_MAP_LOADER = 101;
     private static final int PRICE_LOADER = 102;
 
+    private long mStartDate;
+    private long mEndDate;
     private long mPortfolioId;
     private String mPortfolioName;
 
@@ -62,6 +63,8 @@ public class PortfolioFragment extends BaseFragment implements
         if (getArguments() != null) {
             mPortfolioId = getArguments().getLong(ARG_PORTFOLIO_ID);
         }
+
+
     }
 
     @Override
@@ -69,10 +72,8 @@ public class PortfolioFragment extends BaseFragment implements
         super.onActivityCreated(savedInstanceState);
         // Indicate that this fragment would like to influence the set of actions in the action bar.
         //setHasOptionsMenu(true);
-        Bundle args = new Bundle();
-        args.putLong(ARG_PORTFOLIO_ID, mPortfolioId);
-        getLoaderManager().initLoader(PORTFOLIO_LOADER, args, this);
-        getLoaderManager().initLoader(STOCK_MAP_LOADER, args, this);
+        getLoaderManager().initLoader(STOCK_MAP_LOADER, Bundle.EMPTY, this);
+        getLoaderManager().initLoader(PORTFOLIO_LOADER, Bundle.EMPTY, this);
     }
 
     @Override
@@ -140,14 +141,10 @@ public class PortfolioFragment extends BaseFragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        long portfolioId;
-
         switch (id) {
             case PORTFOLIO_LOADER:
-                portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
-
                 return new CursorLoader(getActivity(),
-                        PortfolioEntry.buildPortfolioUri(portfolioId),
+                        PortfolioEntry.buildPortfolioUri(mPortfolioId),
                         new String[]{
                                 PortfolioEntry._ID,
                                 PortfolioEntry.COLUMN_PORTFOLIO_NAME
@@ -156,10 +153,22 @@ public class PortfolioFragment extends BaseFragment implements
                         null,
                         null);
             case STOCK_MAP_LOADER:
-                portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
-
                 return new CursorLoader(getActivity(),
-                        PortfolioStockMap.buildPortfolioStockUri(portfolioId),
+                        PortfolioStockMap.buildPortfolioIdStockLatestPriceUri(mPortfolioId),
+                        new String[] {
+                                PortfolioStockMap._ID,
+                                PortfolioStockMap.COLUMN_PORTFOLIO_ID,
+                                PortfolioStockMap.COLUMN_STOCK_ID,
+                                StockEntry.COLUMN_TICKER,
+                                PortfolioStockMap.COLUMN_STOCK_AMOUNT
+                        },
+                        null,
+                        null,
+                        null);
+            case PRICE_LOADER:
+                return new CursorLoader(getActivity(),
+                        PortfolioStockMap.buildPortfolioIdPriceFromToUri(mPortfolioId, mStartDate,
+                                mEndDate),
                         new String[] {
                                 PortfolioStockMap._ID,
                                 PortfolioStockMap.COLUMN_PORTFOLIO_ID,
