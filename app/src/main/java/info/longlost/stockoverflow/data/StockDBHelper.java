@@ -64,15 +64,6 @@ public class StockDBHelper extends SQLiteOpenHelper{
 
         db.execSQL(SQL_CREATE_PRICE_TABLE);
 
-        final String SQL_CREATE_PRICE_CACHE_TABLE = "CREATE TABLE " + PriceEntry.CACHE_TABLE_NAME +
-                " (" +
-                PriceEntry._ID + " INTEGER PRIMARY KEY," +
-                PriceEntry.COLUMN_STOCK_ID + " INTEGER NOT NULL," +
-                PriceEntry.COLUMN_START + " INTEGER NOT NULL," +
-                PriceEntry.COLUMN_END + " INTEGER NOT NULL);";
-
-        db.execSQL(SQL_CREATE_PRICE_CACHE_TABLE);
-
         final String SQL_CREATE_LATEST_PRICE_TABLE = "CREATE TABLE " +
                 LatestPriceEntry.TABLE_NAME + " (" +
                 LatestPriceEntry._ID + " INTEGER PRIMARY KEY," +
@@ -97,17 +88,6 @@ public class StockDBHelper extends SQLiteOpenHelper{
                 PriceEntry.TABLE_NAME + "." + PriceEntry.COLUMN_STOCK_ID;
 
         db.execSQL(SQL_CREATE_PORTFOLIO_PRICE_VIEW);
-
-        final String SQL_CREATE_PORTFOLIO_PRICE_CACHE_VIEW = "CREATE VIEW " +
-                PortfolioStockMap.PORTFOLIO_PRICE_CACHE_VIEW + " AS SELECT * FROM " +
-                StockEntry.TABLE_NAME + " LEFT OUTER JOIN " + PortfolioStockMap.TABLE_NAME +
-                " ON " + StockEntry.TABLE_NAME + "." + StockEntry._ID + " = " +
-                PortfolioStockMap.TABLE_NAME + "." + PortfolioStockMap.COLUMN_STOCK_ID +
-                " LEFT OUTER JOIN " + PriceEntry.CACHE_TABLE_NAME + " ON " +
-                StockEntry.TABLE_NAME + "." + StockEntry._ID + " = " +
-                PriceEntry.TABLE_NAME + "." + PriceEntry.COLUMN_STOCK_ID;
-
-        db.execSQL(SQL_CREATE_PORTFOLIO_PRICE_CACHE_VIEW);
 
         final String SQL_CREATE_PORTFOLIO_LATEST_PRICE_VIEW = "CREATE VIEW " +
                 PortfolioStockMap.PORTFOLIO_LATEST_PRICE_VIEW + " AS SELECT * FROM " +

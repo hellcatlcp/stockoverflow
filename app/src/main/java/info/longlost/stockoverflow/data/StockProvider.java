@@ -20,7 +20,6 @@ import static info.longlost.stockoverflow.data.StockContract.LATEST_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.STOCKS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PORTFOLIOS_LOCATION;
 import static info.longlost.stockoverflow.data.StockContract.PRICE_LOCATION;
-import static info.longlost.stockoverflow.data.StockContract.CACHE_LOCATION;
 
 /**
  * Created by ldenison on 02/08/2015.
@@ -60,8 +59,6 @@ public class StockProvider extends ContentProvider {
         matcher.addURI(authority, STOCKS_LOCATION + "/*/" + LATEST_LOCATION, STOCK_ID_LATEST_PRICE);
         matcher.addURI(authority, STOCKS_LOCATION + "/*/" + PRICE_LOCATION + "/from/*/to/*",
                 STOCK_ID_PRICE_FROM_TO);
-        matcher.addURI(authority, STOCKS_LOCATION + "/*/" + PRICE_LOCATION + "/from/*/to/*/" +
-                CACHE_LOCATION, STOCK_ID_PRICE_FROM_TO_CACHE);
 
         matcher.addURI(authority, PORTFOLIOS_LOCATION, PORTFOLIO);
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*", PORTFOLIO_ID);
@@ -71,8 +68,6 @@ public class StockProvider extends ContentProvider {
                 PORTFOLIO_ID_STOCK_ID);
         matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + PRICE_LOCATION + "/from/*/to/*",
                 PORTFOLIO_ID_PRICE_FROM_TO);
-        matcher.addURI(authority, PORTFOLIOS_LOCATION + "/*/" + PRICE_LOCATION + "/from/*/to/*/" +
-                CACHE_LOCATION, PORTFOLIO_ID_PRICE_FROM_TO_CACHE);
 
         return matcher;
     }
@@ -99,12 +94,8 @@ public class StockProvider extends ContentProvider {
                 return PortfolioStockMap.CONTENT_ITEM_TYPE;
             case STOCK_ID_PRICE_FROM_TO:
                 return PriceEntry.CONTENT_TYPE;
-            case STOCK_ID_PRICE_FROM_TO_CACHE:
-                return PriceEntry.CACHE_CONTENT_TYPE;
             case PORTFOLIO_ID_PRICE_FROM_TO:
                 return PriceEntry.CONTENT_TYPE;
-            case PORTFOLIO_ID_PRICE_FROM_TO_CACHE:
-                return PriceEntry.CACHE_CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -171,19 +162,6 @@ public class StockProvider extends ContentProvider {
                         builder.getSelectionArgs(), null, null, sortOrder);
                 break;
             }
-            // "/stocks/*/price/from/*/to/*/cache"
-            case STOCK_ID_PRICE_FROM_TO_CACHE: {
-                SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
-                builder.add(PriceEntry.COLUMN_STOCK_ID + "=?",
-                        new String[] { PriceEntry.getStockPriceId(uri) })
-                        .add(PriceEntry.COLUMN_START + "<=? AND " + PriceEntry.COLUMN_END + ">=?",
-                                new String[]{PriceEntry.getStockPriceFromDate(uri),
-                                        PriceEntry.getStockPriceToDate(uri)});
-
-                retCursor = db.query(PriceEntry.CACHE_TABLE_NAME, projection, builder.build(),
-                        builder.getSelectionArgs(), null, null, sortOrder);
-                break;
-            }
             // "/portfolio/*/price/from/*/to/*"
             case PORTFOLIO_ID_PRICE_FROM_TO: {
                 SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
@@ -194,19 +172,6 @@ public class StockProvider extends ContentProvider {
                                         PriceEntry.getStockPriceToDate(uri) });
 
                 retCursor = db.query(PortfolioStockMap.PORTFOLIO_PRICE_VIEW, projection,
-                        builder.build(), builder.getSelectionArgs(), null, null, sortOrder);
-                break;
-            }
-            // "/portfolio/*/price/from/*/to/*/cache"
-            case PORTFOLIO_ID_PRICE_FROM_TO_CACHE: {
-                SelectionBuilder builder = new SelectionBuilder(selection, selectionArgs);
-                builder.add(PriceEntry.COLUMN_STOCK_ID + "=?",
-                        new String[] { PriceEntry.getStockPriceId(uri) })
-                        .add(PriceEntry.COLUMN_START + "<=? AND " + PriceEntry.COLUMN_END + ">=?",
-                                new String[]{PriceEntry.getStockPriceFromDate(uri),
-                                        PriceEntry.getStockPriceToDate(uri)});
-
-                retCursor = db.query(PortfolioStockMap.PORTFOLIO_PRICE_CACHE_VIEW, projection,
                         builder.build(), builder.getSelectionArgs(), null, null, sortOrder);
                 break;
             }
@@ -340,12 +305,6 @@ public class StockProvider extends ContentProvider {
                 db.beginTransaction();
                 try {
                     count = simpleBulkInsert(db, PriceEntry.TABLE_NAME, values);
-
-                    ContentValues cacheValues = new ContentValues();
-                    cacheValues.put(PriceEntry.COLUMN_STOCK_ID, PriceEntry.getStockPriceId(uri));
-                    cacheValues.put(PriceEntry.COLUMN_START, PriceEntry.getStockPriceFromDate(uri));
-                    cacheValues.put(PriceEntry.COLUMN_END, PriceEntry.getStockPriceToDate(uri));
-                    db.insert(PriceEntry.CACHE_TABLE_NAME, null, cacheValues);
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();

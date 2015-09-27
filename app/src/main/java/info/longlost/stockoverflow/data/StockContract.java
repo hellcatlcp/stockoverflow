@@ -18,7 +18,6 @@ public class StockContract {
     public static final String LATEST_LOCATION = "latest";
     public static final String FROM_LOCATION = "from";
     public static final String TO_LOCATION = "to";
-    public static final String CACHE_LOCATION = "cache";
 
     // TODO (helenparsons): Add constant strings to represent that a stock is either unverified,
     // TODO (helenparsons)  verified or invalid called UNVERIFIED_VALUE, VERIFIED_VALUE and
@@ -86,18 +85,7 @@ public class StockContract {
         public static final String COLUMN_CLOSE = "close";
         public static final String COLUMN_VOLUME = "volume";
 
-        // Cache table stores cached date ranges
-        public static final String CACHE_CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
-                CONTENT_AUTHORITY + "/" + STOCKS_LOCATION + "/" + PRICE_LOCATION + "/" +
-                CACHE_LOCATION;
-        public static final String CACHE_CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE +
-                "/" + CONTENT_AUTHORITY + "/" + STOCKS_LOCATION + "/" + PRICE_LOCATION + "/" +
-                CACHE_LOCATION;
-        public static final String CACHE_TABLE_NAME = "prices_cache";
-        public static final String COLUMN_START = "start_date";
-        public static final String COLUMN_END = "end_date";
-
-        // /stock/*/price/[from/*/to/*[/cache]]
+        // /stock/*/price/[from/*/to/*]
 
         public static String getStockPriceId(Uri uri) {
             return uri.getPathSegments().get(1);
@@ -150,7 +138,6 @@ public class StockContract {
         public static final String TABLE_NAME = "portfolio_map";
         public static final String PORTFOLIO_LATEST_PRICE_VIEW = "portfolio_latest_price_view";
         public static final String PORTFOLIO_PRICE_VIEW = "portfolio_price_view";
-        public static final String PORTFOLIO_PRICE_CACHE_VIEW = "portfolio_price_cache_view";
         public static final String COLUMN_PORTFOLIO_ID = "portfolio_id";
         public static final String COLUMN_STOCK_ID = "stock_id";
         public static final String COLUMN_STOCK_AMOUNT = "stock_amount";
@@ -166,7 +153,7 @@ public class StockContract {
                     .appendPath(stockId.toString()).build();
         }
 
-        // /portfolio/*/price/[from/*/to/*[/cache]]
+        // /portfolio/*/price/[from/*/to/*]
         public static Uri buildPortfolioIdPriceFromToUri(Long portfolioId, Long from, Long to) {
             return ContentUris.withAppendedId(PortfolioEntry.CONTENT_URI, portfolioId)
                     .buildUpon().appendPath(PRICE_LOCATION).appendPath(FROM_LOCATION)
