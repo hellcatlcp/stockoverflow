@@ -8,6 +8,7 @@
 
     <string name="add_stock">Add Stock</string>
     <string name="title_stock">Stock:</string>
+    <string name="stock_ticker">Stock Ticker:</string>
 
     <string name="sync_account_type">stockoverflow.longlost.info</string>
     <string name="content_authority">info.longlost.stockoverflow</string>

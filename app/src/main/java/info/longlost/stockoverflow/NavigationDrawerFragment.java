@@ -366,11 +366,6 @@ public class NavigationDrawerFragment extends Fragment implements
             return true;
         }
 
-        if (item.getItemId() == R.id.add_stock) {
-            Toast.makeText(getActivity(), "Add Stock", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 

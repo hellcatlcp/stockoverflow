@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -69,14 +71,13 @@ public class PortfolioFragment extends BaseFragment implements
             mPortfolioId = getArguments().getLong(ARG_PORTFOLIO_ID);
         }
 
-
+        // Indicate that this fragment would like to influence the set of actions in the action bar.
+        setHasOptionsMenu(true);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Indicate that this fragment would like to influence the set of actions in the action bar.
-        setHasOptionsMenu(true);
         getLoaderManager().initLoader(STOCK_MAP_LOADER, Bundle.EMPTY, this);
         getLoaderManager().initLoader(PORTFOLIO_LOADER, Bundle.EMPTY, this);
     }
@@ -159,17 +160,20 @@ public class PortfolioFragment extends BaseFragment implements
 
         switch (id) {
             case R.id.add_stock:
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                AddStockDialogFragment addStockDialog = new AddStockDialogFragment();
+                addStockDialog.show(fm, "fragment_add_stock");
                 // TODO (helenparsons): This dialog should display a text box allowing the user
                 // TODO (helenparsons)  to enter the amount they have of a given stock and the
                 // TODO (helenparsons)  stock ticker symbol.  It should have an 'OK' button which
                 // TODO (helenparsons)  attempts to add the stock to the currently selected
                 // TODO (helenparsons)  portfolio and a 'Cancel' button which just closes the dialog
                 // TODO (helenparsons)  without doing anything.
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setMessage(Long.toString(mPortfolioId))
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
+                //AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                //builder.setMessage(Long.toString(mPortfolioId))
+                //        .setCancelable(false)
+                //        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                //            public void onClick(DialogInterface dialog, int id) {
                                 // TODO (helenparsons): If the user clicked 'OK' we should do
                                 // TODO (helenparsons)  several things:
                                 // TODO (helenparsons)    1) Add the symbol to the stocks table
@@ -197,10 +201,10 @@ public class PortfolioFragment extends BaseFragment implements
                                 // TODO (helenparsons)       the magic of ContentProviders our UI
                                 // TODO (helenparsons)       will be automatically notified of
                                 // TODO (helenparsons)       updates to the data.
-                            }
-                        });
-                AlertDialog alert = builder.create();
-                alert.show();
+                //            }
+                //        });
+                //AlertDialog alert = builder.create();
+                //alert.show();
 
         }
         //
