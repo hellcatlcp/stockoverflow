@@ -1,12 +1,19 @@
 package info.longlost.stockoverflow;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -21,7 +28,6 @@ import java.util.Arrays;
 
 import info.longlost.stockoverflow.data.StockContract.PortfolioStockMap;
 import info.longlost.stockoverflow.data.StockContract.StockEntry;
-import info.longlost.stockoverflow.data.StockContract.PriceEntry;
 import info.longlost.stockoverflow.data.StockContract.PortfolioEntry;
 
 /**
@@ -36,6 +42,8 @@ public class PortfolioFragment extends BaseFragment implements
     private static final int STOCK_MAP_LOADER = 101;
     private static final int PRICE_LOADER = 102;
 
+    private long mStartDate;
+    private long mEndDate;
     private long mPortfolioId;
     private String mPortfolioName;
 
@@ -62,17 +70,16 @@ public class PortfolioFragment extends BaseFragment implements
         if (getArguments() != null) {
             mPortfolioId = getArguments().getLong(ARG_PORTFOLIO_ID);
         }
+
+        // Indicate that this fragment would like to influence the set of actions in the action bar.
+        setHasOptionsMenu(true);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Indicate that this fragment would like to influence the set of actions in the action bar.
-        //setHasOptionsMenu(true);
-        Bundle args = new Bundle();
-        args.putLong(ARG_PORTFOLIO_ID, mPortfolioId);
-        getLoaderManager().initLoader(PORTFOLIO_LOADER, args, this);
-        getLoaderManager().initLoader(STOCK_MAP_LOADER, args, this);
+        getLoaderManager().initLoader(STOCK_MAP_LOADER, Bundle.EMPTY, this);
+        getLoaderManager().initLoader(PORTFOLIO_LOADER, Bundle.EMPTY, this);
     }
 
     @Override
@@ -139,15 +146,77 @@ public class PortfolioFragment extends BaseFragment implements
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        long portfolioId;
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.portfolio, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
         switch (id) {
-            case PORTFOLIO_LOADER:
-                portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
+            case R.id.add_stock:
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                AddStockDialogFragment addStockDialog = new AddStockDialogFragment();
+                addStockDialog.show(fm, "fragment_add_stock");
+                // TODO (helenparsons): This dialog should display a text box allowing the user
+                // TODO (helenparsons)  to enter the amount they have of a given stock and the
+                // TODO (helenparsons)  stock ticker symbol.  It should have an 'OK' button which
+                // TODO (helenparsons)  attempts to add the stock to the currently selected
+                // TODO (helenparsons)  portfolio and a 'Cancel' button which just closes the dialog
+                // TODO (helenparsons)  without doing anything.
+                //AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                //builder.setMessage(Long.toString(mPortfolioId))
+                //        .setCancelable(false)
+                //        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                //            public void onClick(DialogInterface dialog, int id) {
+                                // TODO (helenparsons): If the user clicked 'OK' we should do
+                                // TODO (helenparsons)  several things:
+                                // TODO (helenparsons)    1) Add the symbol to the stocks table
+                                // TODO (helenparsons)       using getContext().getContentResolver()
+                                // TODO (helenparsons)       .insert(StocksEntry.CONTENT_URI, ...)
+                                // TODO (helenparsons)       This should initialize the newly
+                                // TODO (helenparsons)       created status column (see other TODO)
+                                // TODO (helenparsons)       to StockContract.UNVERIFIED_VALUE
+                                // TODO (helenparsons)
+                                // TODO (helenparsons)    2) Start a LatestPriceIntentService to go and
+                                // TODO (helenparsons)       fetch the latest price of the entered
+                                // TODO (helenparsons)       stock and enter it in the database.
+                                // TODO (helenparsons)       This verifies that the stock exists
+                                // TODO (helenparsons)       as far as Yahoo exists, so the
+                                // TODO (helenparsons)       IntentService can set the status of
+                                // TODO (helenparsons)       the stock appropriately.
+                                // TODO (helenparsons)       This is going to involve constructing
+                                // TODO (helenparsons)       an appropriate Intent object that
+                                // TODO (helenparsons)       explicitly starts a
+                                // TODO (helenparsons)       LatestPriceIntentService.class and passes
+                                // TODO (helenparsons)       the ticker we want to get price data
+                                // TODO (helenparsons)       for as an Intent extra Bundle.
+                                // TODO (helenparsons)       We don't need to do anything when the
+                                // TODO (helenparsons)       IntentService finishes because due to
+                                // TODO (helenparsons)       the magic of ContentProviders our UI
+                                // TODO (helenparsons)       will be automatically notified of
+                                // TODO (helenparsons)       updates to the data.
+                //            }
+                //        });
+                //AlertDialog alert = builder.create();
+                //alert.show();
 
+        }
+        //
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case PORTFOLIO_LOADER:
                 return new CursorLoader(getActivity(),
-                        PortfolioEntry.buildPortfolioUri(portfolioId),
+                        PortfolioEntry.buildPortfolioUri(mPortfolioId),
                         new String[]{
                                 PortfolioEntry._ID,
                                 PortfolioEntry.COLUMN_PORTFOLIO_NAME
@@ -156,10 +225,22 @@ public class PortfolioFragment extends BaseFragment implements
                         null,
                         null);
             case STOCK_MAP_LOADER:
-                portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
-
                 return new CursorLoader(getActivity(),
-                        PortfolioStockMap.buildPortfolioStockUri(portfolioId),
+                        PortfolioStockMap.buildPortfolioIdStockLatestPriceUri(mPortfolioId),
+                        new String[] {
+                                PortfolioStockMap._ID,
+                                PortfolioStockMap.COLUMN_PORTFOLIO_ID,
+                                PortfolioStockMap.COLUMN_STOCK_ID,
+                                StockEntry.COLUMN_TICKER,
+                                PortfolioStockMap.COLUMN_STOCK_AMOUNT
+                        },
+                        null,
+                        null,
+                        null);
+            case PRICE_LOADER:
+                return new CursorLoader(getActivity(),
+                        PortfolioStockMap.buildPortfolioIdPriceFromToUri(mPortfolioId, mStartDate,
+                                mEndDate),
                         new String[] {
                                 PortfolioStockMap._ID,
                                 PortfolioStockMap.COLUMN_PORTFOLIO_ID,

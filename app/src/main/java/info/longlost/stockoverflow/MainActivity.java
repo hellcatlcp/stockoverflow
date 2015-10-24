@@ -46,7 +46,7 @@ public class MainActivity extends ActionBarActivity
     // TODO (helenparsons)  minutes (in onStart) and cancels the sync in onStop.
     @Override
     public void onPortfolioSelected(long portfolioId) {
-        // update the main content by replacing fragments
+        // update the portfolio content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         mSelectedPortfolioId = portfolioId;
@@ -58,7 +58,7 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onStockSelected(long stockId) {
-        // update the main content by replacing fragments
+        // update the portfolio content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         fragmentManager.beginTransaction()
@@ -81,22 +81,9 @@ public class MainActivity extends ActionBarActivity
         actionBar.setTitle(mTitle);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
-            return true;
-        }
-        return super.onCreateOptionsMenu(menu);
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.

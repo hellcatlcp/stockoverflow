@@ -183,7 +183,7 @@ public class NavigationDrawerFragment extends Fragment implements
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
 
-        // set a custom shadow that overlays the main content when the drawer opens
+        // set a custom shadow that overlays the portfolio content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
 
@@ -366,11 +366,6 @@ public class NavigationDrawerFragment extends Fragment implements
             return true;
         }
 
-        if (item.getItemId() == R.id.add_stock) {
-            Toast.makeText(getActivity(), "Add Stock", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -407,7 +402,7 @@ public class NavigationDrawerFragment extends Fragment implements
                     long portfolioId = args.getLong(ARG_PORTFOLIO_ID, -1);
 
                     return new CursorLoader(getActivity(),
-                            PortfolioStockMap.buildPortfolioStockUri(portfolioId),
+                            PortfolioStockMap.buildPortfolioIdStockLatestPriceUri(portfolioId),
                             new String[] {
                                     PortfolioStockMap._ID,
                                     PortfolioStockMap.COLUMN_PORTFOLIO_ID,
